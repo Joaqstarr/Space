@@ -17,9 +17,12 @@ public:
 	UShipStats();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
-	float ForwardSpeed {100};
+	float ForwardSpeed {3000};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
-	float StrafeSpeed {50};
+	float StrafeSpeed {2000};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
+	float VerticalSpeed {1500};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	float ForceScale {1};
 

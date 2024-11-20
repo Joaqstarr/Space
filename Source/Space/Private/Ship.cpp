@@ -130,16 +130,17 @@ void AShip::AddYaw(float yawAmount)
 	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 }
 
-void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
+void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust)
 {
 	FVector forward {ShipMesh->GetForwardVector()};
 	FVector right {ShipMesh->GetRightVector()};
-
+	FVector up {ShipMesh->GetUpVector()};
 
 	ApplyMovementForce(forward, forwardThrust, ShipStats->ForwardSpeed, ShipStats->ForceScale);
 	ApplyMovementForce(right, sidewaysThrust, ShipStats->StrafeSpeed, ShipStats->ForceScale);
+	ApplyMovementForce(up, verticalThrust, ShipStats->VerticalSpeed, ShipStats->ForceScale);
 
-	FVector movementDir(forwardThrust, sidewaysThrust, 0);
+	FVector movementDir(forwardThrust, sidewaysThrust, verticalThrust);
 	movementDir.Normalize();
 
 	

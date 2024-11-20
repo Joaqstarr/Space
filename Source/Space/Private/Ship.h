@@ -54,7 +54,7 @@ protected:
 	void AddYaw(float yawAmount);
 
 	UFUNCTION(BlueprintCallable)
-	void AddThrust(float forwardThrust, float sidewaysThrust);
+	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 
 private:
 	float LastYawSpeed {0};
