@@ -7,6 +7,8 @@
 #include "Ship.generated.h"
 
 
+class UGravityComponent;
+
 UCLASS()
 class AShip : public APawn
 {
@@ -29,7 +31,10 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USkeletalMeshComponent* ShipMesh;
+	UStaticMeshComponent* ShipMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UGravityComponent* GravityComponent;
 
 	UFUNCTION(BlueprintCallable)
 	void AddRoll(float rollAmount);

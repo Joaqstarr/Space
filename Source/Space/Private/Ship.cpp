@@ -2,6 +2,8 @@
 
 
 #include "Ship.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/Physics/GravityComponent.h"
 
 // Sets default values
 AShip::AShip()
@@ -9,17 +11,21 @@ AShip::AShip()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	ShipMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("ShipMesh")));
+	
+	ShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("StaticShipMesh")));
 	ShipMesh->SetSimulatePhysics(true);
 	ShipMesh->SetEnableGravity(false);
+
 	SetRootComponent(ShipMesh);
+	
+	GravityComponent = CreateDefaultSubobject<UGravityComponent>("Gravity Component");
 }
 
 // Called when the game starts or when spawned
 void AShip::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -42,6 +48,7 @@ void AShip::AddRoll(float rollAmount)
 
 void AShip::AddPitch(float rollAmount)
 {
+	
 }
 
 void AShip::AddYaw(float yawAmount)
