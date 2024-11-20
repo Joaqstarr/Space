@@ -37,7 +37,7 @@ void AShip::BeginPlay()
 void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	//ApplyBrakes();
 }
 
 // Called to bind functionality to input
@@ -57,6 +57,22 @@ void AShip::AddPitch(float pitchAmount)
 {
 	AddTorqueControlAroundAxis(-pitchAmount, FVector(0,1, 0), ShipStats->PitchSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
+}
+
+void AShip::ApplyBrakes()
+{
+	if(!ShipMesh)return;
+
+	FVector dir {ShipMesh->GetForwardVector()};
+	FVector vel {ShipMesh->GetPhysicsLinearVelocity()};
+
+	float dot = FVector::DotProduct(dir, vel);
+
+	if(dot > ShipStats->BrakeStart)return;
+
+	const float dot01 = -dot/2;
+
+	ShipMesh->AddForce(-vel * dot01 * ShipMesh->GetMass());
 }
 
 void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const
@@ -80,6 +96,28 @@ void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, f
 	ShipMesh->AddTorqueInDegrees(worldTorque, NAME_None, true);
 }
 
+void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const
+{
+	if (!ShipMesh || direction.IsNearlyZero())
+		return;
+
+	// Get current velocity in the desired direction
+	FVector currentVelocity = ShipMesh->GetComponentVelocity();
+	float currentSpeedInDirection = FVector::DotProduct(currentVelocity, direction);
+
+	// Calculate the desired speed based on input
+	float desiredSpeed = inputValue * maxSpeed;
+
+	// Compute the speed error
+	float speedError = desiredSpeed - currentSpeedInDirection;
+
+	// Calculate the force to apply (scaled by ForceScale)
+	FVector force = direction.GetSafeNormal() * speedError * forceScale;
+
+	// Apply the force
+	ShipMesh->AddForce(force * ShipMesh->GetMass());
+}
+
 void AShip::AddYaw(float yawAmount)
 {
 	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
@@ -90,8 +128,12 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
 	FVector forward {ShipMesh->GetForwardVector()};
 	FVector right {ShipMesh->GetRightVector()};
 
-	ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, NAME_None, true);
-	ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, NAME_None, true);
+
+	ApplyMovementForce(forward, forwardThrust, ShipStats->ForwardSpeed, ShipStats->ForceScale);
+	ApplyMovementForce(right, sidewaysThrust, ShipStats->StrafeSpeed, ShipStats->ForceScale);
+
+	//ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, NAME_None, true);
+	//ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, NAME_None, true);
 
 }
 

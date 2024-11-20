@@ -20,7 +20,15 @@ public:
 	float ForwardSpeed {100};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	float StrafeSpeed {50};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
+	float ForceScale {1};
 
+	//describes the dot in which the brakes begin to be applied
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
+	float BrakeStart {0.3f};
+
+	
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
 	float PitchSpeed {5};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)

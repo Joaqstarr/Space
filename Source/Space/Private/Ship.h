@@ -49,7 +49,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void AddPitch(float pitchAmount);
-	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
 
 	UFUNCTION(BlueprintCallable)
 	void AddYaw(float yawAmount);
@@ -59,4 +58,8 @@ protected:
 
 private:
 	float LastYawSpeed {0};
+	void ApplyBrakes();
+	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
+	void ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const;
+
 };
