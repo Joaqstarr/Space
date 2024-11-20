@@ -3,6 +3,7 @@
 
 #include "Components/Physics/HoverComponent.h"
 #include "GravityComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values for this component's properties
 UHoverComponent::UHoverComponent()
@@ -25,14 +26,12 @@ void UHoverComponent::BeginPlay()
 }
 
 
-void UHoverComponent::CalculateAndAddHoverForce()
+void UHoverComponent::CalculateAndAddHoverForce(const FVector& gravity)
 {
 	if(!GravityComponent)return;
 	
-	FVector gravity = GravityComponent->GetGravityDirection();
-	
 	//if no gravity, no hover
-	if(gravity.Length() == 0) return;
+	if(gravity.IsNearlyZero()) return;
 	FVector downDir = gravity;
 
 	downDir.Normalize();
@@ -65,8 +64,10 @@ void UHoverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	CalculateAndAddHoverForce();
+	FVector gravity {GravityComponent->GetGravityDirection()};
 	
+	CalculateAndAddHoverForce(gravity);
+	SmoothOrientToGravity(gravity, DeltaTime);
 }
 
 float UHoverComponent::HooksLawDampen(float hitDistance)
@@ -76,5 +77,34 @@ float UHoverComponent::HooksLawDampen(float hitDistance)
 	lastHitDist = hitDistance;
 
 	return forceAmount;
+}
+
+void UHoverComponent::SmoothOrientToGravity(const FVector& GravityVector, float DeltaTime) const
+{
+	if(!bOrientToGravity)return;
+	if(GravityVector.IsNearlyZero())return;
+	if (!GetOwner()) return;
+
+
+	// Get the root component and ensure it's a physics body
+	UPrimitiveComponent* RootComponent = Cast<UPrimitiveComponent>(GetOwner()->GetRootComponent());
+	if (!RootComponent || !RootComponent->IsSimulatingPhysics()) return;
+
+	// Normalize the gravity vector
+	FVector DownDirection = GravityVector.GetSafeNormal();
+
+	// Calculate the current "down" vector of the actor (its negative up vector)
+	FVector ActorDown = -RootComponent->GetUpVector();
+
+	// Calculate the rotation needed to align the actor's "down" with the gravity vector
+	FVector TorqueAxis = FVector::CrossProduct(ActorDown, DownDirection);
+	float TorqueMagnitude = FVector::DotProduct(ActorDown, DownDirection) - 1.0f; // -1.0f to +1.0f range
+
+	// Scale the torque for smooth alignment
+	TorqueMagnitude *= -200.0f; // Adjust multiplier for stronger or weaker torque
+
+	// Apply the torque to the actor's physics body
+	FVector Torque = TorqueAxis * TorqueMagnitude;
+	RootComponent->AddTorqueInRadians(Torque, NAME_None, true);
 }
 

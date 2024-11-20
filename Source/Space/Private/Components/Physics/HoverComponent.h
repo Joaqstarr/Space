@@ -21,8 +21,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	void CalculateAndAddHoverForce();
 
+	UPROPERTY(EditAnywhere)
+	bool bOrientToGravity = true;
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -33,10 +34,14 @@ private:
 	float HoverStrength {2};
 	UPROPERTY(EditAnywhere)
 	float Dampening {0.5f};
+	
 	UPROPERTY()
 	UGravityComponent* GravityComponent;
 
 	float lastHitDist;
 	float HooksLawDampen(float hitDistance);
+
+	void SmoothOrientToGravity(const FVector& GravityVector, float DeltaTime) const;
+	void CalculateAndAddHoverForce(const FVector& GravityVector);
 
 };
