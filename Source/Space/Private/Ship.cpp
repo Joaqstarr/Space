@@ -49,18 +49,40 @@ void AShip::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AShip::AddRoll(float rollAmount)
 {
+	AddTorqueControlAroundAxis(rollAmount, FVector(1,0, 0), ShipStats->RollSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
+
 }
 
 void AShip::AddPitch(float pitchAmount)
 {
+	AddTorqueControlAroundAxis(-pitchAmount, FVector(0,1, 0), ShipStats->PitchSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
+
+}
+
+void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const
+{
+	if(!ShipMesh)return;
 	
+	const FVector worldAngularVelocity {ShipMesh->GetPhysicsAngularVelocityInDegrees()};
+	const FVector localAngularVelocity {ActorToWorld().InverseTransformVectorNoScale(worldAngularVelocity)};
+
+	
+	float currentSpeed = (localAngularVelocity.X * axis.X) + (localAngularVelocity.Y * axis.Y) + (localAngularVelocity.Z * axis.Z);
+
+	float desiredSpeed {inputAmount * maxSpeed};
+
+	float torqueAmt {(desiredSpeed - currentSpeed) * strength - (currentSpeed * damp)};
+
+	const FVector localTorque{axis * torqueAmt};
+
+	const FVector worldTorque {ShipMesh->GetComponentTransform().TransformVectorNoScale(localTorque)};
+
+	ShipMesh->AddTorqueInDegrees(worldTorque, NAME_None, true);
 }
 
 void AShip::AddYaw(float yawAmount)
 {
-	const FVector up {ShipMesh->GetUpVector()};
-
-	ShipMesh->AddTorqueInDegrees(up * ShipStats->YawSpeed * yawAmount, FName("None"), true);
+	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 }
 
 void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
@@ -68,8 +90,8 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
 	FVector forward {ShipMesh->GetForwardVector()};
 	FVector right {ShipMesh->GetRightVector()};
 
-	ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, FName("None"), true);
-	ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, FName("None"), true);
+	ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, NAME_None, true);
+	ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, NAME_None, true);
 
 }
 

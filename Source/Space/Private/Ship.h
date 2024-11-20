@@ -49,10 +49,14 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void AddPitch(float pitchAmount);
-	
+	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
+
 	UFUNCTION(BlueprintCallable)
 	void AddYaw(float yawAmount);
 
 	UFUNCTION(BlueprintCallable)
 	void AddThrust(float forwardThrust, float sidewaysThrust);
+
+private:
+	float LastYawSpeed {0};
 };

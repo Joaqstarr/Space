@@ -16,15 +16,20 @@ public:
 	// Sets default values for this component's properties
 	UShipStats();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	float ForwardSpeed {100};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	float StrafeSpeed {50};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
 	float PitchSpeed {5};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
 	float RollSpeed {5};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
 	float YawSpeed {5};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
+	float TorqueStrength {5000};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turning)
+	float Damping {0.5f};
 };
