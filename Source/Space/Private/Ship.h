@@ -58,7 +58,7 @@ protected:
 
 private:
 	float LastYawSpeed {0};
-	void ApplyBrakes();
+	float ApplyBrakes(FVector movementDir) const;
 	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
 	void ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const;
 

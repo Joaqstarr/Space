@@ -14,7 +14,7 @@ class APlayerShip : public AShip
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
-	FVector2D GetMousePos() const {return MousePos/MouseRadius;};
+	FVector2D GetMousePos(bool affectedByDeadzone) const;
 protected:
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateMousePos(const FVector2D& delta);
@@ -22,5 +22,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};
-
+	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(ClampMin="0.0", ClampMax="1.0", UIMin="0.0", UIMax="1.0"))
+	float MouseDeadzone{0.25f};
 };

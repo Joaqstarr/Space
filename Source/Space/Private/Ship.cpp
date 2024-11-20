@@ -37,7 +37,6 @@ void AShip::BeginPlay()
 void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//ApplyBrakes();
 }
 
 // Called to bind functionality to input
@@ -59,20 +58,28 @@ void AShip::AddPitch(float pitchAmount)
 
 }
 
-void AShip::ApplyBrakes()
+//returns speed lost
+float AShip::ApplyBrakes(FVector movementDir) const
 {
-	if(!ShipMesh)return;
+	if(!ShipMesh)return 0;
+	
+	movementDir.Normalize();
+	FVector vel {ShipMesh->GetComponentVelocity()};
+	
+	FVector velDir {vel};
+	velDir.Normalize();
+	
+	const float dot = FVector::DotProduct(velDir, movementDir);
+	const float dotToInterp = 1 - FMath::Clamp((dot-0.5f) * 2, 0, 1);
 
-	FVector dir {ShipMesh->GetForwardVector()};
-	FVector vel {ShipMesh->GetPhysicsLinearVelocity()};
+	FVector transformedVel {vel * dotToInterp};
+	//GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Cyan, FString::Printf(TEXT("dot amount: %f"), dot));
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + movementDir * 500, FColor::Cyan);
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + velDir * 200, FColor::Red);
 
-	float dot = FVector::DotProduct(dir, vel);
+	ShipMesh->AddForce(-transformedVel * ShipMesh->GetMass());
 
-	if(dot > ShipStats->BrakeStart)return;
-
-	const float dot01 = -dot/2;
-
-	ShipMesh->AddForce(-vel * dot01 * ShipMesh->GetMass());
+	return transformedVel.Length();
 }
 
 void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const
@@ -132,6 +139,17 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
 	ApplyMovementForce(forward, forwardThrust, ShipStats->ForwardSpeed, ShipStats->ForceScale);
 	ApplyMovementForce(right, sidewaysThrust, ShipStats->StrafeSpeed, ShipStats->ForceScale);
 
+	FVector movementDir(forwardThrust, sidewaysThrust, 0);
+	movementDir.Normalize();
+
+	
+	//if(movementDir.IsNearlyZero())return;
+	
+	float lost = ApplyBrakes(ActorToWorld().TransformVectorNoScale(movementDir));
+
+	//GEngine->AddOnScreenDebugMessage(1, 0.1f, FColor::Cyan, FString::Printf(TEXT("brake amount: %f"), lost));
+
+	ShipMesh->AddForce(lost * movementDir * ShipMesh->GetMass());
 	//ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, NAME_None, true);
 	//ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, NAME_None, true);
 

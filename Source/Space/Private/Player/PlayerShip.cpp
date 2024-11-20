@@ -4,6 +4,19 @@
 #include "Player/PlayerShip.h"
 
 
+FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
+{
+	FVector2D mousePosNorm {MousePos/MouseRadius};
+
+	if(affectedByDeadzone)
+	{
+		if(mousePosNorm.Length() < MouseDeadzone) return FVector2D::Zero();
+		mousePosNorm.X = (mousePosNorm.X - MouseDeadzone)/(1 - MouseDeadzone);
+		mousePosNorm.Y = (mousePosNorm.Y - MouseDeadzone)/(1 - MouseDeadzone);
+	}
+	return mousePosNorm;
+}
+
 FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
 {
 	MousePos.X += delta.X;
