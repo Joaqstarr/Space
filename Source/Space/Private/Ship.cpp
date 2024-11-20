@@ -58,6 +58,9 @@ void AShip::AddPitch(float pitchAmount)
 
 void AShip::AddYaw(float yawAmount)
 {
+	const FVector up {ShipMesh->GetUpVector()};
+
+	ShipMesh->AddTorqueInDegrees(up * ShipStats->YawSpeed * yawAmount, FName("None"), true);
 }
 
 void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
@@ -65,8 +68,8 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust)
 	FVector forward {ShipMesh->GetForwardVector()};
 	FVector right {ShipMesh->GetRightVector()};
 
-	ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed);
-	ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed);
+	ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, FName("None"), true);
+	ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, FName("None"), true);
 
 }
 

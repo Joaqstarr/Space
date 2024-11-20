@@ -12,7 +12,15 @@ UCLASS()
 class APlayerShip : public AShip
 {
 	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintCallable)
+	FVector2D GetMousePos() const {return MousePos/MouseRadius;};
+protected:
+	UFUNCTION(BlueprintCallable)
+	FVector2D UpdateMousePos(const FVector2D& delta);
+	FVector2D MousePos{};
 
-
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	float MouseRadius{50};
 
 };
