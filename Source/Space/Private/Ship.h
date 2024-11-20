@@ -7,7 +7,9 @@
 #include "Ship.generated.h"
 
 
+class UShipStats;
 class UGravityComponent;
+class UHoverComponent;
 
 UCLASS()
 class AShip : public APawn
@@ -35,12 +37,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UGravityComponent* GravityComponent;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UHoverComponent* HoverComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UShipStats* ShipStats;
+	
 	UFUNCTION(BlueprintCallable)
 	void AddRoll(float rollAmount);
 
 	UFUNCTION(BlueprintCallable)
-	void AddPitch(float rollAmount);
+	void AddPitch(float pitchAmount);
 	
 	UFUNCTION(BlueprintCallable)
 	void AddYaw(float yawAmount);
