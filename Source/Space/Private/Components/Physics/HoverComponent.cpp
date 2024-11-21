@@ -101,7 +101,7 @@ void UHoverComponent::SmoothOrientToGravity(const FVector& GravityVector, float 
 	float TorqueMagnitude = FVector::DotProduct(ActorDown, DownDirection) - 1.0f; // -1.0f to +1.0f range
 
 	// Scale the torque for smooth alignment
-	TorqueMagnitude *= -200.0f; // Adjust multiplier for stronger or weaker torque
+	TorqueMagnitude *= -reorientationStrength; // Adjust multiplier for stronger or weaker torque
 
 	// Apply the torque to the actor's physics body
 	FVector Torque = TorqueAxis * TorqueMagnitude;

@@ -22,8 +22,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Reorienatation)
 	bool bOrientToGravity = true;
+	UPROPERTY(EditAnywhere, Category=Reorienatation)
+	float reorientationStrength {200};
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
