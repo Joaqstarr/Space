@@ -4,7 +4,8 @@
 #include "Components/Physics/GravityComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/MeshComponent.h"
-
+#include "Utility/PriorityQueue.h"
+#include "GravityVolume.h"
 
 // Sets default values for this component's properties
 UGravityComponent::UGravityComponent()
@@ -14,7 +15,6 @@ UGravityComponent::UGravityComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 
-	// ...
 }
 
 
@@ -23,7 +23,6 @@ void UGravityComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	
 }
 
@@ -35,6 +34,20 @@ void UGravityComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 	// ...
 	ApplyGravity();
+}
+
+void UGravityComponent::EnteredGravityVolume(UGravityVolume* volume)
+{
+	if(!volume)return;
+	GravityZonesQueue.Push(volume, volume->GetVolumePriority());
+}
+
+void UGravityComponent::ExitedGravityVolume(UGravityVolume* volume)
+{
+	if(!volume)return;
+
+
+	GravityZonesQueue.Remove(volume);
 }
 
 void UGravityComponent::ApplyGravity() const
@@ -52,8 +65,9 @@ void UGravityComponent::ApplyGravity() const
 
 FVector UGravityComponent::GetGravityDirection() const
 {
-	return GravityDirection;
+	if(GravityZonesQueue.IsEmpty() || GravityZonesQueue.Top() == nullptr )	return FVector::Zero();
 
+	return GravityZonesQueue.Top()->GetGravityDirection(GetOwner()->GetActorLocation());
 }
 
 

@@ -2,10 +2,14 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Utility/PriorityQueue.h"
 #include "GravityComponent.generated.h"
 
+
+class UGravityVolume;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UGravityComponent : public UActorComponent
@@ -18,7 +22,8 @@ public:
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+	void EnteredGravityVolume(UGravityVolume* volume);
+	void ExitedGravityVolume(UGravityVolume* volume);
 
 	FVector GetGravityDirection() const;
 protected:
@@ -29,4 +34,6 @@ protected:
 	FVector GravityDirection;
 private:
 	void ApplyGravity() const;
+	TPriorityQueue<UGravityVolume*> GravityZonesQueue;
+	
 };

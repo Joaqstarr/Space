@@ -18,12 +18,14 @@ AShip::AShip()
 	ShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("StaticShipMesh")));
 	ShipMesh->SetSimulatePhysics(true);
 	ShipMesh->SetEnableGravity(false);
-
+	ShipMesh->SetCollisionObjectType(ECC_Pawn);
 	SetRootComponent(ShipMesh);
 	
 	GravityComponent = CreateDefaultSubobject<UGravityComponent>("Gravity Component");
 	HoverComponent = CreateDefaultSubobject<UHoverComponent>("Hover Component");
 	ShipStats = CreateDefaultSubobject<UShipStats>("Ship Statistics");
+
+	
 }
 
 // Called when the game starts or when spawned
