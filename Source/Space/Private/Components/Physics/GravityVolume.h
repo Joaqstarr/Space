@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "GravityVolume.generated.h"
 
 class UShapeComponent;
@@ -11,7 +11,7 @@ class UShapeComponent;
  * 
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UGravityVolume : public UActorComponent
+class UGravityVolume : public USceneComponent
 {
 	GENERATED_BODY()
 public:
@@ -19,6 +19,7 @@ public:
 	virtual FVector GetGravityDirection(const FVector& objectPos) const;
 
 	int32 GetVolumePriority() const;
+	void SetupComponentCollisions(UPrimitiveComponent* component);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -27,6 +28,10 @@ protected:
 	int32 priority = 0;
 
 	virtual void BeginPlay() override;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UPrimitiveComponent> PrimitiveVolume;
 private:
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -34,6 +39,4 @@ private:
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UPROPERTY()
-	TObjectPtr<UPrimitiveComponent> PrimitiveVolume;
 };

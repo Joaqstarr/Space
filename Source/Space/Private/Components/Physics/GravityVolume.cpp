@@ -22,23 +22,32 @@ int32 UGravityVolume::GetVolumePriority() const
 	return 1000-priority;
 }
 
+void UGravityVolume::SetupComponentCollisions(UPrimitiveComponent* component)
+{
+	if(!component)return;
+	
+	component->SetVisibility(false);
+		
+	component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  
+	component->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	component->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	component->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+}
+
 void UGravityVolume::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	USceneComponent* root = GetOwner()->GetRootComponent();  // This could be a collision component like UBoxComponent or USphereComponent.
-	if (root && root->IsA<UPrimitiveComponent>())
+
+	if(!PrimitiveVolume)
 	{
-		PrimitiveVolume = Cast<UPrimitiveComponent>(root);
+		USceneComponent* root = GetOwner()->GetRootComponent();  // This could be a collision component like UBoxComponent or USphereComponent.
+		if (root && root->IsA<UPrimitiveComponent>())
+		{
+			PrimitiveVolume = Cast<UPrimitiveComponent>(root);
 
-		PrimitiveVolume->SetVisibility(false);
-		
-		PrimitiveVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  
-		PrimitiveVolume->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-		PrimitiveVolume->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		PrimitiveVolume->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+			SetupComponentCollisions(PrimitiveVolume);
+		}
 	}
-
 	if(PrimitiveVolume)
 	{
 		PrimitiveVolume->OnComponentBeginOverlap.AddDynamic(this, &UGravityVolume::OnBeginOverlap);
