@@ -65,7 +65,7 @@ void UGravityComponent::ApplyGravity() const
 
 FVector UGravityComponent::GetGravityDirection() const
 {
-	if(GravityZonesQueue.IsEmpty() || GravityZonesQueue.Top() == nullptr )	return FVector::Zero();
+	if(GravityZonesQueue.IsEmpty() || GravityZonesQueue.Top() == nullptr )	return DefaultGravityDirection;
 
 	return GravityZonesQueue.Top()->GetGravityDirection(GetOwner()->GetActorLocation());
 }

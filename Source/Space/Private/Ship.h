@@ -31,6 +31,18 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable)
+	void AddRoll(float rollAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void AddPitch(float pitchAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void AddYaw(float yawAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ShipMesh;
@@ -43,18 +55,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UShipStats* ShipStats;
-	
-	UFUNCTION(BlueprintCallable)
-	void AddRoll(float rollAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void AddPitch(float pitchAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void AddYaw(float yawAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 
 private:
 	float LastYawSpeed {0};

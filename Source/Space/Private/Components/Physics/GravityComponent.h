@@ -31,7 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector GravityDirection;
+	FVector DefaultGravityDirection;
 private:
 	void ApplyGravity() const;
 	TPriorityQueue<UGravityVolume*> GravityZonesQueue;
