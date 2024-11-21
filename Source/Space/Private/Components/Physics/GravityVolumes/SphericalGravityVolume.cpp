@@ -15,10 +15,19 @@ USphericalGravityVolume::USphericalGravityVolume()
 FVector USphericalGravityVolume::GetGravityDirection(const FVector& objectPos) const
 {
 	FVector dirLength {GetComponentLocation() - objectPos};
-	float radius = AsSphereComponent->GetScaledSphereRadius();
-	//TODO: Gravity falloff!
-	FVector dir{dirLength};
-	dir.Normalize();
+	float radius {AsSphereComponent->GetScaledSphereRadius()};
+	float minDropoff = radius * GravityFalloffStart;
+	float dist = dirLength.Length();
 
-	return dir * GravityStrength;
+	float distInterp = ((dist-minDropoff) / (radius - minDropoff));
+	distInterp = FMath::Clamp(distInterp, 0, 1);
+	float interpTransformed = 1-distInterp;
+
+	
+	//TODO: Gravity falloff!
+
+	
+	FVector dir{dirLength.GetSafeNormal()};
+
+	return dir * GravityStrength * interpTransformed;
 }

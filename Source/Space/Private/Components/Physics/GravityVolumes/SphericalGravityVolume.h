@@ -19,6 +19,8 @@ public:
 
 	virtual FVector GetGravityDirection(const FVector& objectPos) const override;
 
+	UPROPERTY(EditAnywhere, meta=(ClampMin="0.0", ClampMax="1.0", UIMin="0.0", UIMax="1.0"))
+	float GravityFalloffStart = 1;
 private:
 	UPROPERTY()
 	TObjectPtr<USphereComponent> AsSphereComponent;
