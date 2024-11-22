@@ -25,16 +25,20 @@ void UPoolManagerComponent::BeginPlay()
 void UPoolManagerComponent::InitializePool()
 {
 	if(!ClassToPool)return;
-
+	FName folderPath(GetOwner()->GetName() + "_Pools/" + GetName());
+	
 	for(int i = 0; i < PoolSize; i++)
 	{
 		AActor* spawnedActor = GetWorld()->SpawnActor<AActor>(ClassToPool);
-
+		
 		if(spawnedActor && spawnedActor->Implements<UPoolableInterface>())
 		{
-			
+			spawnedActor->SetFolderPath(folderPath);
 			IPoolableInterface::Execute_Deactivate(spawnedActor);
 			Pool.Add(spawnedActor);
+		}else
+		{
+			GetWorld()->DestroyActor(spawnedActor);
 		}
 	}
 }
