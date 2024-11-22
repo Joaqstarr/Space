@@ -8,6 +8,7 @@
 
 
 class AShip;
+struct FHitResult;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UChaseAiComponent : public UActorComponent
@@ -22,8 +23,15 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	void ApplyLinearThrust(FVector dir) const;
+	FVector CalculateAvoidance(const FVector& forward, const FVector& sideDir, const FHitResult& forwardRes) const;
+	FVector ApplyPitchYawRollThrust(const FVector& dir) const;
 	void FlyTowardsTarget(const FVector& target) const;
 
+	UPROPERTY(EditAnywhere)
+	float ObstacleDetectionRange {500};
+	UPROPERTY(EditAnywhere)
+	float GroundAvoidanceDist {200};
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -31,4 +39,5 @@ public:
 private:
 	FVector TargetPosition;
 	TObjectPtr<AShip> Ship;
+	FHitResult LineTraceDir(const FVector& dir, float distance) const;
 };
