@@ -48,7 +48,7 @@ AActor* UPoolManagerComponent::GetPooledActor()
 {
 	for(AActor* actor : Pool)
 	{
-		if(IPoolableInterface::Execute_IsInActive(actor))
+		if(IPoolableInterface::Execute_IsInactive(actor))
 		{
 			actor->SetOwner(GetOwner());
 			IPoolableInterface::Execute_Activate(actor);

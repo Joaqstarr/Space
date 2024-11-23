@@ -22,5 +22,5 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Reset();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	bool IsInActive();
+	bool IsInactive();
 };

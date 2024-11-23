@@ -16,7 +16,22 @@ AProjectile::AProjectile()
 	SphereHitbox = CreateDefaultSubobject<USphereComponent>(FName(TEXT("Sphere Collision")));
 	SetRootComponent(SphereHitbox);
 
+	SphereHitbox->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
+	SphereHitbox->SetCollisionObjectType(ECC_PhysicsBody);
+	SphereHitbox->SetCollisionResponseToAllChannels(ECR_Block);
+
+	SphereHitbox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	SphereHitbox->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	SphereHitbox->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
+
+	
+
+	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(FName(TEXT("Projectile Movement")));
+	ProjectileMovementComponent->SetUpdatedComponent(SphereHitbox);
+	ProjectileMovementComponent->bAutoActivate = false;
+
+	SetCanBeDamaged(false);
 }
 
 
@@ -25,7 +40,13 @@ AProjectile::AProjectile()
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	ProjectileMovementComponent->OnComponentActivated.AddDynamic(this, &AProjectile::OnProjectileMCActivated);
 	
+}
+
+void AProjectile::OnProjectileMCActivated( UActorComponent* Component, bool bReset)
+{
+	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * ProjectileMovementComponent->InitialSpeed);
 }
 
 // Called every frame
@@ -44,7 +65,7 @@ void AProjectile::Activate_Implementation()
 		asPrimitive->IgnoreActorWhenMoving(GetOwner(), true);
 	}
 
-	ProjectileMovementComponent->SetComponentTickEnabled(true);
+	//ProjectileMovementComponent->SetComponentTickEnabled(true);
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 }
@@ -57,27 +78,28 @@ void AProjectile::Deactivate_Implementation()
 	{
 		asPrimitive->IgnoreActorWhenMoving(GetOwner(), false);
 	}
-
-	ProjectileMovementComponent->SetComponentTickEnabled(false);
+	GetWorldTimerManager().ClearTimer(DespawnTimerHandle);
+	
+	ProjectileMovementComponent->Deactivate();
+	//ProjectileMovementComponent->SetComponentTickEnabled(false);
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 }
 
 void AProjectile::Reset_Implementation()
-{
+{	
 	IPoolableInterface::Reset_Implementation();
-	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * MaxSpeed);
-
-	FTimerHandle TimerHandle;
+	ProjectileMovementComponent->Activate(true);
+	
 
 	auto TimerDelegate = FTimerDelegate::CreateUObject(this, &AProjectile::Deactivate_Implementation);
 
-	GetWorldTimerManager().SetTimer(TimerHandle, TimerDelegate, LifeTime, false);
+	GetWorldTimerManager().SetTimer(DespawnTimerHandle, TimerDelegate, LifeTime, false);
 	
 }
 
 
-bool AProjectile::IsInActive_Implementation()
+bool AProjectile::IsInactive_Implementation()
 {
 	return !GetActorEnableCollision() && IsHidden();
 }

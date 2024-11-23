@@ -56,6 +56,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UShipStats* ShipStats;
 
+	
+
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;

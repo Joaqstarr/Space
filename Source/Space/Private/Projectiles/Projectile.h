@@ -20,10 +20,10 @@ public:
 	AProjectile();
 	virtual void Tick(float DeltaTime) override;
 
-	void Activate_Implementation() override;
-	void Deactivate_Implementation() override;
-	void Reset_Implementation() override;
-	bool IsInActive_Implementation() override;
+	virtual void Activate_Implementation() override;
+	virtual void Deactivate_Implementation() override;
+	virtual void Reset_Implementation() override;
+	virtual bool IsInactive_Implementation() override;
 
 	
 protected:
@@ -41,4 +41,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
+	
+private:
+	UPROPERTY()
+	FTimerHandle DespawnTimerHandle;
+
+	UFUNCTION()
+	void OnProjectileMCActivated( UActorComponent* Component, bool bReset);
 };
