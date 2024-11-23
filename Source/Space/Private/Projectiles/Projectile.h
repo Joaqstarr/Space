@@ -30,6 +30,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile Stats")
+	float LifeTime = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile Stats")
+	float MaxSpeed = 600;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> SphereHitbox;
 	

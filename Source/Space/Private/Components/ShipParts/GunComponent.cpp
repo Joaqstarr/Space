@@ -3,8 +3,8 @@
 
 #include "Components/ShipParts/GunComponent.h"
 
+#include "Components/ObjectPooling/PoolableInterface.h"
 #include "Components/ObjectPooling/PoolManagerComponent.h"
-#include "Editor/PropertyEditorTestObject.h"
 
 // Sets default values for this component's properties
 UGunComponent::UGunComponent()
@@ -38,11 +38,21 @@ void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	// ...
 }
 
-void UGunComponent::FireGun()
+void UGunComponent::Fire()
 {
+	if(fireTimer > 0)return;
+	if(!ProjectilePool)return;
+	
 	AActor* projectile =  ProjectilePool->GetPooledActor();
 	if(!projectile)return;
-	
+
+	fireTimer = 60.f/RoundsPerMinute;
 	projectile->SetActorLocation(GetComponentLocation());
+	projectile->SetActorRotation(GetComponentRotation());
+
+	if(projectile->Implements<UPoolableInterface>())
+	{
+		IPoolableInterface::Execute_Reset(projectile);
+	}
 }
 

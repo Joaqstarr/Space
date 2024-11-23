@@ -17,9 +17,9 @@ class IPoolableInterface
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void Activate();
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Deactivate();
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Reset();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsInActive();

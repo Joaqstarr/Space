@@ -38,7 +38,13 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::Activate_Implementation()
 {
 	IPoolableInterface::Activate_Implementation();
-	
+
+	if(UPrimitiveComponent* asPrimitive = Cast<UPrimitiveComponent>(GetRootComponent()))
+	{
+		asPrimitive->IgnoreActorWhenMoving(GetOwner(), true);
+	}
+
+	ProjectileMovementComponent->SetComponentTickEnabled(true);
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 }
@@ -46,6 +52,13 @@ void AProjectile::Activate_Implementation()
 void AProjectile::Deactivate_Implementation()
 {
 	IPoolableInterface::Deactivate_Implementation();
+
+	if(UPrimitiveComponent* asPrimitive = Cast<UPrimitiveComponent>(GetRootComponent()))
+	{
+		asPrimitive->IgnoreActorWhenMoving(GetOwner(), false);
+	}
+
+	ProjectileMovementComponent->SetComponentTickEnabled(false);
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 }
@@ -53,9 +66,16 @@ void AProjectile::Deactivate_Implementation()
 void AProjectile::Reset_Implementation()
 {
 	IPoolableInterface::Reset_Implementation();
+	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * MaxSpeed);
 
+	FTimerHandle TimerHandle;
+
+	auto TimerDelegate = FTimerDelegate::CreateUObject(this, &AProjectile::Deactivate_Implementation);
+
+	GetWorldTimerManager().SetTimer(TimerHandle, TimerDelegate, LifeTime, false);
 	
 }
+
 
 bool AProjectile::IsInActive_Implementation()
 {

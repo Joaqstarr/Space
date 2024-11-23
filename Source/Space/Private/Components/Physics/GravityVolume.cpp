@@ -7,9 +7,7 @@
 UGravityVolume::UGravityVolume()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	
-
+	//GetOwner()->bGenerateOverlapEventsDuringLevelStreaming = true;
 }
 
 FVector UGravityVolume::GetGravityDirection(const FVector& objectPos) const

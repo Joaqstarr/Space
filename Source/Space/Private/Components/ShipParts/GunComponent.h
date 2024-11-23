@@ -19,7 +19,7 @@ public:
 	UGunComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
-	void FireGun();
+	void Fire();
 
 protected:
 	// Called when the game starts

@@ -50,6 +50,7 @@ AActor* UPoolManagerComponent::GetPooledActor()
 	{
 		if(IPoolableInterface::Execute_IsInActive(actor))
 		{
+			actor->SetOwner(GetOwner());
 			IPoolableInterface::Execute_Activate(actor);
 			return actor;
 		}
