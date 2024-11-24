@@ -45,6 +45,7 @@ private:
 
 	void FindTargetsInRange();
 	void FilterTargetsWithScreen();
-
+	void CheckLockedTargetValidity();
+	
 	TObjectPtr<UCameraComponent> TargetingCamera;
 };

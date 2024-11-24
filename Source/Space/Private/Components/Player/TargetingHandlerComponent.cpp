@@ -69,7 +69,7 @@ void UTargetingHandlerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	FindTargetsInRange();
 	FilterTargetsWithScreen();
-	
+	CheckLockedTargetValidity();
 }
 
 void UTargetingHandlerComponent::FindTargetsInRange()
@@ -163,5 +163,12 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 	}
 	GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Purple, FString::Printf(TEXT("On Screen targets: %d"), PotentialTargets.Num()));
 
+}
+
+void UTargetingHandlerComponent::CheckLockedTargetValidity()
+{
+	if(!CurrentTarget)return;
+
+	if(!IsValidScreenPosition(CurrentTarget->GetScreenPosition()))CurrentTarget = nullptr;
 }
 
