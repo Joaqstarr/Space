@@ -6,6 +6,7 @@
 #include "../Ship.h"
 #include "PlayerShip.generated.h"
 
+class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
 
 UCLASS()
@@ -13,12 +14,16 @@ class APlayerShip : public AShip
 {
 	GENERATED_BODY()
 public:
+	APlayerShip(const FObjectInitializer& OI);
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetMousePos(bool affectedByDeadzone) const;
 protected:
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateMousePos(const FVector2D& delta);
 	FVector2D MousePos{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UTargetingHandlerComponent> TargetingManager;
 
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};

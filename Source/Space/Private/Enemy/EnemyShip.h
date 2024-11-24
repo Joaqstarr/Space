@@ -6,6 +6,7 @@
 #include "Ship.h"
 #include "EnemyShip.generated.h"
 
+class UTargetableComponent;
 /**
  * 
  */
@@ -13,5 +14,9 @@ UCLASS()
 class AEnemyShip : public AShip
 {
 	GENERATED_BODY()
-	
+public:
+	AEnemyShip(const FObjectInitializer& OI);
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UTargetableComponent> TargetableComponent;
 };

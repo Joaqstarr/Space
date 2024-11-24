@@ -3,6 +3,13 @@
 
 #include "Player/PlayerShip.h"
 
+#include "Components/Player/TargetingHandlerComponent.h"
+
+
+APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
+{
+	TargetingManager = OI.CreateDefaultSubobject<UTargetingHandlerComponent>(this, FName("TargetingHandler"));
+}
 
 FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
 {

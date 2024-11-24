@@ -9,23 +9,20 @@
 #include "Components/Physics/HoverComponent.h"
 
 // Sets default values
-AShip::AShip()
+AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	
-	ShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("StaticShipMesh")));
+	ShipMesh = OI.CreateDefaultSubobject<UStaticMeshComponent>(this, FName(TEXT("StaticShipMesh")));
 	ShipMesh->SetSimulatePhysics(true);
 	ShipMesh->SetEnableGravity(false);
 	ShipMesh->SetCollisionObjectType(ECC_Pawn);
 	SetRootComponent(ShipMesh);
 	
-	GravityComponent = CreateDefaultSubobject<UGravityComponent>("Gravity Component");
-	HoverComponent = CreateDefaultSubobject<UHoverComponent>("Hover Component");
-	ShipStats = CreateDefaultSubobject<UShipStats>("Ship Statistics");
-
-	
+	GravityComponent = OI.CreateDefaultSubobject<UGravityComponent>(this, "Gravity Component");
+	HoverComponent = OI.CreateDefaultSubobject<UHoverComponent>(this, "Hover Component");
+	ShipStats = OI.CreateDefaultSubobject<UShipStats>(this, "Ship Statistics");
 }
 
 // Called when the game starts or when spawned
