@@ -14,12 +14,51 @@ UTargetingHandlerComponent::UTargetingHandlerComponent()
 
 }
 
+UTargetableComponent* UTargetingHandlerComponent::GetBestTarget()
+{
+	UTargetableComponent* closest = nullptr;
+	float closestDist {10000};
+
+	FVector2D center(0.5f,0.5f);
+	GEngine->AddOnScreenDebugMessage(45, 8.1f, FColor::Magenta, FString::Printf(TEXT("Num: %d"), PotentialTargets.Num()));
+	for(UTargetableComponent* target : PotentialTargets)
+	{
+		FVector2D targPos {target->GetScreenPosition()};
+		GEngine->AddOnScreenDebugMessage(46, 8.1f, FColor::Purple, targPos.ToString());
+
+		if(IsValidScreenPosition(targPos))
+		{
+			GEngine->AddOnScreenDebugMessage(46, 8.1f, FColor::Magenta, TEXT("is valid"));
+
+			float dist = FVector2D::Distance(center, targPos);;
+			if(closest == nullptr || dist < closestDist)
+			{
+				closestDist = dist;
+				closest = target;
+			}
+		}
+	}
+	return closest;
+}
+
+bool UTargetingHandlerComponent::UpdateTarget()
+{
+	CurrentTarget = GetBestTarget();
+	return CurrentTarget != nullptr;
+}
+
 
 void UTargetingHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	TargetingCamera = GetOwner()->GetComponentByClass<UCameraComponent>();
+}
+
+bool UTargetingHandlerComponent::IsValidScreenPosition(const FVector2D& pos)
+{
+	return (pos.X > 0 && pos.X < 1 &&
+			pos.Y > 0 && pos.Y < 1);
 }
 
 
@@ -115,8 +154,7 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 	PotentialTargets.RemoveAll([&](UTargetableComponent* target)
 	{
 		FVector2D screenPosition = target->GetScreenPosition();
-		return (screenPosition.X < 0 || screenPosition.X > 1 ||
-			screenPosition.Y < 0 || screenPosition.Y > 1);
+		return !IsValidScreenPosition(screenPosition);
 	});
 
 	for (UTargetableComponent* target : PotentialTargets)

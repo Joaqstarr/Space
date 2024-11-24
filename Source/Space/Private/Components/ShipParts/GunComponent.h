@@ -7,6 +7,7 @@
 #include "GunComponent.generated.h"
 
 
+class UTargetableComponent;
 class UPoolManagerComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -19,8 +20,9 @@ public:
 	UGunComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
-	void Fire();
-
+	void Fire(UTargetableComponent* lockedOnTarget);
+	
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

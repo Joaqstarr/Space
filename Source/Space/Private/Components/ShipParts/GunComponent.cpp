@@ -5,6 +5,7 @@
 
 #include "Components/ObjectPooling/PoolableInterface.h"
 #include "Components/ObjectPooling/PoolManagerComponent.h"
+#include "Projectiles/Projectile.h"
 
 // Sets default values for this component's properties
 UGunComponent::UGunComponent()
@@ -38,7 +39,7 @@ void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	// ...
 }
 
-void UGunComponent::Fire()
+void UGunComponent::Fire(UTargetableComponent* lockedOnTarget)
 {
 	if(fireTimer > 0)return;
 	if(!ProjectilePool)return;
@@ -49,7 +50,9 @@ void UGunComponent::Fire()
 	fireTimer = 60.f/RoundsPerMinute;
 	projectile->SetActorLocation(GetComponentLocation());
 	projectile->SetActorRotation(GetComponentRotation());
-
+	
+	if(AProjectile* asProjectile = Cast<AProjectile>(projectile)) asProjectile->SetTarget(lockedOnTarget);
+	
 	if(projectile->Implements<UPoolableInterface>())
 	{
 		IPoolableInterface::Execute_Reset(projectile);

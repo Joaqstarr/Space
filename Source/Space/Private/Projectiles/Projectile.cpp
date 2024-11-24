@@ -2,7 +2,7 @@
 
 
 #include "Projectiles/Projectile.h"
-
+#include "../Components/TargetableComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -102,6 +102,13 @@ void AProjectile::Reset_Implementation()
 bool AProjectile::IsInactive_Implementation()
 {
 	return !GetActorEnableCollision() && IsHidden();
+}
+
+void AProjectile::SetTarget(UTargetableComponent* target)
+{
+	//USceneComponent* asScene = Cast<USceneComponent>(target);
+	ProjectileMovementComponent->bIsHomingProjectile = (target != nullptr);
+	ProjectileMovementComponent->HomingTargetComponent = target;
 }
 
 

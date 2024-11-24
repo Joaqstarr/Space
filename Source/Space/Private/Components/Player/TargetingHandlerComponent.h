@@ -18,11 +18,19 @@ class UTargetingHandlerComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UTargetingHandlerComponent();
+	UTargetableComponent* GetBestTarget();
+
+	UFUNCTION(BlueprintCallable)
+	bool UpdateTarget();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UTargetableComponent> CurrentTarget = nullptr;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	bool IsValidScreenPosition(const FVector2D& pos);
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
