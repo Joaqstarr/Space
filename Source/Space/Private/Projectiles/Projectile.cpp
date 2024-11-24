@@ -10,7 +10,7 @@
 AProjectile::AProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 
 	SphereHitbox = CreateDefaultSubobject<USphereComponent>(FName(TEXT("Sphere Collision")));
@@ -49,11 +49,27 @@ void AProjectile::OnProjectileMCActivated( UActorComponent* Component, bool bRes
 	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * ProjectileMovementComponent->InitialSpeed);
 }
 
+void AProjectile::DisableHomingOffAngle(float minDot)
+{
+	if(ProjectileMovementComponent->HomingTargetComponent == nullptr)return;
+
+	FVector dir = (ProjectileMovementComponent->HomingTargetComponent->GetComponentLocation() - GetActorLocation()).GetSafeNormal();
+	float dot = FVector::DotProduct(GetActorForwardVector(), dir);
+
+	if(dot < minDot)
+	{
+		ProjectileMovementComponent->HomingTargetComponent = nullptr;
+		ProjectileMovementComponent->bIsHomingProjectile = false;
+	}
+}
+
 // Called every frame
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	DisableHomingOffAngle(0.4f);
 
+	
 }
 
 void AProjectile::Activate_Implementation()

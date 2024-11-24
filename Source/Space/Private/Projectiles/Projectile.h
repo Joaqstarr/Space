@@ -50,4 +50,6 @@ private:
 
 	UFUNCTION()
 	void OnProjectileMCActivated( UActorComponent* Component, bool bReset);
+
+	void DisableHomingOffAngle(float minDot);
 };
