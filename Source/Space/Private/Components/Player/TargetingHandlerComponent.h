@@ -42,7 +42,7 @@ private:
 	float TargetingRange = 10000;
 	
 
-
+	void SetCurrentTarget(UTargetableComponent* newTarget);
 	void FindTargetsInRange();
 	void FilterTargetsWithScreen();
 	void CheckLockedTargetValidity();
