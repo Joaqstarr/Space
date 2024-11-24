@@ -18,6 +18,11 @@ class UTargetableComponent : public USceneComponent
 public:	
 	// Sets default values for this component's properties
 	UTargetableComponent(const FObjectInitializer& OI);
+
+	//CALL THIS IN CONSTRUCTOR \/
+	UFUNCTION(BlueprintCallable)
+	void SetupInitialAttachment( USceneComponent* root);
+
 	
 	UFUNCTION(BlueprintCallable, Category="Targeting")
 	bool IsTargetable() const;
@@ -25,10 +30,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Targeting")
 	void SetTargetable(bool bTargetable);
 
+	void EnteredRange();
+	void ExitedRange();
+	
+
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetScreenPosition() const;
 	void SetScreenPosition(const FVector2D& screenPosition, const bool bOnScreen);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<USphereComponent> CollisionSphere;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

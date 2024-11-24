@@ -35,8 +35,14 @@ void UTargetingHandlerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 void UTargetingHandlerComponent::FindTargetsInRange()
 {
-	PotentialTargets.Empty();
-	
+
+
+	/*PotentialTargets.FilterByPredicate([&](UTargetableComponent* target)
+	{
+		float dist = FVector::Dist(target->GetComponentLocation(), GetOwner()->GetActorLocation());
+
+		return (dist <= TargetingRange);
+	});*/
 	TArray<FOverlapResult> overlapResults;
 	FVector ownerLocation = GetOwner()->GetActorLocation();
 
@@ -48,7 +54,18 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 	if(GetWorld()->OverlapMultiByChannel(overlapResults, ownerLocation, FQuat::Identity, ECC_GameTraceChannel1, sphere, params))
 	{
 		GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Green, FString::Printf(TEXT("result count: %d"), overlapResults.Num()));
-
+		for(UTargetableComponent* target : PotentialTargets)
+		{
+			if(!overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
+			{
+				return res.GetComponent() == Cast<UPrimitiveComponent>(target);
+			}))
+			{
+				target->ExitedRange();
+				PotentialTargets.Remove(target);
+			}
+		}
+		
 		for(const FOverlapResult& result : overlapResults)
 		{
 			UPrimitiveComponent* overlappedComponent = 	result.GetComponent();
@@ -61,7 +78,12 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 				UTargetableComponent* targetable = Cast<UTargetableComponent>(overlappedComponent->GetOuter());
 				if(targetable && targetable->IsTargetable())
 				{
-					PotentialTargets.Add(targetable);
+					int count = PotentialTargets.Num();
+					PotentialTargets.AddUnique(targetable);
+					if(PotentialTargets.Num() != count)
+					{
+						targetable->EnteredRange();
+					}
 				}
 			}
 		}

@@ -14,8 +14,9 @@ UTargetableComponent::UTargetableComponent(const FObjectInitializer& OI) : Super
 
 	CollisionSphere = OI.CreateDefaultSubobject<USphereComponent>(this, FName("Distance Check Sphere"));
 	CollisionSphere->SetCollisionObjectType(ECC_GameTraceChannel1);
-	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Block);
 	CollisionSphere->SetSphereRadius(10);
+	CollisionSphere->SetupAttachment(this);
 
 	TargetIndicator = OI.CreateDefaultSubobject<UWidgetComponent>(this, FName("Target Indicator UI"));
 	TargetIndicator->SetupAttachment(CollisionSphere);
@@ -23,7 +24,14 @@ UTargetableComponent::UTargetableComponent(const FObjectInitializer& OI) : Super
 
 	
 }
-
+void UTargetableComponent::SetupInitialAttachment(USceneComponent* root)
+{
+	
+	SetupAttachment(root);
+	CollisionSphere->SetupAttachment(this);
+	
+	TargetIndicator->SetupAttachment(CollisionSphere);
+}
 bool UTargetableComponent::IsTargetable() const
 {
 	return bIsTargetable;
@@ -33,6 +41,17 @@ bool UTargetableComponent::IsTargetable() const
 void UTargetableComponent::SetTargetable(bool bTargetable)
 {
 	bIsTargetable = bTargetable;
+}
+
+void UTargetableComponent::EnteredRange()
+{
+	TargetIndicator->SetVisibility(true);
+
+}
+
+void UTargetableComponent::ExitedRange()
+{
+	TargetIndicator->SetVisibility(false);
 }
 
 FVector2D UTargetableComponent::GetScreenPosition() const
@@ -49,6 +68,8 @@ void UTargetableComponent::SetScreenPosition(const FVector2D& screenPosition, co
 	ScreenPosition = screenPosition/viewPortSize;
 	bIsOnScreen = bOnScreen;
 }
+
+
 
 void UTargetableComponent::BeginPlay()
 {
