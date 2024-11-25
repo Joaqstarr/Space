@@ -79,14 +79,6 @@ void UTargetingHandlerComponent::SetCurrentTarget(UTargetableComponent* newTarge
 
 void UTargetingHandlerComponent::FindTargetsInRange()
 {
-
-
-	/*PotentialTargets.FilterByPredicate([&](UTargetableComponent* target)
-	{
-		float dist = FVector::Dist(target->GetComponentLocation(), GetOwner()->GetActorLocation());
-
-		return (dist <= TargetingRange);
-	});*/
 	TArray<FOverlapResult> overlapResults;
 	FVector ownerLocation = GetOwner()->GetActorLocation();
 
@@ -100,12 +92,13 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 		//GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Green, FString::Printf(TEXT("result count: %d"), overlapResults.Num()));
 		for(UTargetableComponent* target : PotentialTargets)
 		{
-			if(!overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
+			if(target && !overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
 			{
 				return res.GetComponent() == Cast<UPrimitiveComponent>(target);
 			}))
 			{
-				target->ExitedRange();
+				if(target != nullptr)
+					target->ExitedRange();
 				PotentialTargets.Remove(target);
 			}
 		}
@@ -144,6 +137,7 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 
 	for(UTargetableComponent* target : PotentialTargets)
 	{
+		if(target == nullptr)continue;
 		FVector2D screenPosition;
 		
 		FVector targetLocation = target->GetComponentLocation();

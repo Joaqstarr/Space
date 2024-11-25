@@ -3,6 +3,7 @@
 
 #include "Ship.h"
 
+#include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/Physics/GravityComponent.h"
@@ -23,6 +24,8 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 	GravityComponent = OI.CreateDefaultSubobject<UGravityComponent>(this, "Gravity Component");
 	HoverComponent = OI.CreateDefaultSubobject<UHoverComponent>(this, "Hover Component");
 	ShipStats = OI.CreateDefaultSubobject<UShipStats>(this, "Ship Statistics");
+
+	HealthComponent = OI.CreateDefaultSubobject<UHealthComponent>(this, FName("HealthComponent"));
 }
 
 // Called when the game starts or when spawned

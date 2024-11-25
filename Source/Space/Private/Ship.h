@@ -7,6 +7,7 @@
 #include "Ship.generated.h"
 
 
+class UHealthComponent;
 class UShipStats;
 class UGravityComponent;
 class UHoverComponent;
@@ -44,20 +45,20 @@ public:
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* ShipMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UStaticMeshComponent> ShipMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UGravityComponent* GravityComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UGravityComponent> GravityComponent;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UHoverComponent* HoverComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UHoverComponent> HoverComponent;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UShipStats* ShipStats;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UShipStats> ShipStats;
 
-	
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UHealthComponent> HealthComponent;
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;
