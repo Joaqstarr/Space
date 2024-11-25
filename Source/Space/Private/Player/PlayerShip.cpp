@@ -2,13 +2,15 @@
 
 
 #include "Player/PlayerShip.h"
-
 #include "Components/Player/TargetingHandlerComponent.h"
-
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 
 APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
 {
 	TargetingManager = OI.CreateDefaultSubobject<UTargetingHandlerComponent>(this, FName("TargetingHandler"));
+
+	StimuliSource = OI.CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(this, FName("AiStimuliSource"));
+	
 }
 
 FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const

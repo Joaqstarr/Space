@@ -6,7 +6,7 @@
 #include "../Ship.h"
 #include "PlayerShip.generated.h"
 
-class UTargetingHandlerComponent;
+class UAIPerceptionStimuliSourceComponent;class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
 
 UCLASS()
@@ -24,7 +24,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UTargetingHandlerComponent> TargetingManager;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAIPerceptionStimuliSourceComponent> StimuliSource;
+	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};
 	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(ClampMin="0.0", ClampMax="1.0", UIMin="0.0", UIMax="1.0"))
