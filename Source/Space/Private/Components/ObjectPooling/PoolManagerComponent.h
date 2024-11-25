@@ -22,6 +22,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category=Pooling)
 	void ReturnPooledActor(AActor* actor);
 
+	UFUNCTION(BlueprintCallable, Category=Pooling)
+	TSubclassOf<AActor> GetClassToPool();
 	
 protected:
 	// Called when the game starts

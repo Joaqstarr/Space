@@ -30,7 +30,7 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 RoundsPerMinute = 60;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Turret)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Turret)
 	TObjectPtr<UPoolManagerComponent> ProjectilePool;
 private:
 	float fireTimer = 0;;

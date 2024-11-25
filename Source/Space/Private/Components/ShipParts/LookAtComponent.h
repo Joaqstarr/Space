@@ -17,7 +17,7 @@ public:
 	ULookAtComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateLookPosition(const FVector& newPos);
+	void UpdateLookPosition(const FVector& newTargetPos, const FVector& targVelocity, float bulletSpeed);
 protected:
 	// Called when the game starts
 	void SmoothRotateTowardsTarget(const FVector& target, const float DeltaTime);

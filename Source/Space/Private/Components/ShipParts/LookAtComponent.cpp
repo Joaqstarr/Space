@@ -12,9 +12,36 @@ ULookAtComponent::ULookAtComponent()
 	
 }
 
-void ULookAtComponent::UpdateLookPosition(const FVector& newPos)
+void ULookAtComponent::UpdateLookPosition(const FVector& newTargetPos, const FVector& targVelocity, float bulletSpeed)
 {
-	TargetPosition = newPos;
+	FVector toTarget = newTargetPos - GetComponentLocation();
+
+	float a = targVelocity.Dot(targVelocity) - bulletSpeed * bulletSpeed;
+	float b = 2 * toTarget.Dot(targVelocity);
+	float c = toTarget.Dot(toTarget);
+
+	float discriminant = b*b - 4 * a * c;
+
+	if(discriminant < 0)
+	{
+		TargetPosition = newTargetPos;
+		return;
+	}
+
+	float discriminantSqrt {FMath::Sqrt(discriminant)};
+
+	float t1 = (-b + discriminantSqrt) / (2*a);
+	float t2 = (-b - discriminantSqrt) / (2 * a);
+
+	float t = (t1 > 0) ? t1 : t2;
+
+	if(t < 0)
+	{
+		TargetPosition = newTargetPos;
+		return;
+	}
+	
+	TargetPosition = newTargetPos + targVelocity * t;
 }
 
 

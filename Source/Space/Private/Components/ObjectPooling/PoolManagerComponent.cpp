@@ -67,4 +67,10 @@ void UPoolManagerComponent::ReturnPooledActor(AActor* actor)
 	}
 }
 
+TSubclassOf<AActor> UPoolManagerComponent::GetClassToPool()
+{
+	return ClassToPool;
+}
+
+
 

@@ -30,7 +30,8 @@ AProjectile::AProjectile()
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(FName(TEXT("Projectile Movement")));
 	ProjectileMovementComponent->SetUpdatedComponent(SphereHitbox);
 	ProjectileMovementComponent->bAutoActivate = false;
-
+	ProjectileMovementComponent->InitialSpeed = MaxSpeed;
+	ProjectileMovementComponent->MaxSpeed = MaxSpeed;
 	SetCanBeDamaged(false);
 }
 
@@ -46,7 +47,7 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnProjectileMCActivated( UActorComponent* Component, bool bReset)
 {
-	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * ProjectileMovementComponent->InitialSpeed);
+	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * MaxSpeed);
 }
 
 void AProjectile::DisableHomingOffAngle(float minDot)
