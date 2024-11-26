@@ -7,7 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
-class UTargetableComponent;
+class ATargetable;
 class USphereComponent;
 class UProjectileMovementComponent;
 
@@ -26,7 +26,7 @@ public:
 	virtual void Reset_Implementation() override;
 	virtual bool IsInactive_Implementation() override;
 
-	void SetTarget(UTargetableComponent* target);
+	void SetTarget(ATargetable* target);
 	
 protected:
 	// Called when the game starts or when spawned

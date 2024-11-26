@@ -6,7 +6,7 @@
 #include "../Ship.h"
 #include "PlayerShip.generated.h"
 
-class UTargetableComponent;
+class ATargetable;
 class UWidgetComponent;
 class UAIPerceptionStimuliSourceComponent;class UTargetingHandlerComponent;
 class USkeletalMeshComponent;

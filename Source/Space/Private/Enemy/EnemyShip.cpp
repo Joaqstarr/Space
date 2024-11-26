@@ -9,8 +9,5 @@
 
 AEnemyShip::AEnemyShip(const FObjectInitializer& OI) : Super(OI)
 {
-	TargetableComponent = OI.CreateDefaultSubobject<UTargetableComponent>(this, FName("Targetable"));
-	TargetableComponent->SetupInitialAttachment(ShipMesh);
-
 }
 

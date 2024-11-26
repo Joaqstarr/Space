@@ -3,6 +3,7 @@
 
 #include "Components/ShipParts/GunComponent.h"
 
+#include "Actors/Targetable.h"
 #include "Components/ObjectPooling/PoolableInterface.h"
 #include "Components/ObjectPooling/PoolManagerComponent.h"
 #include "Projectiles/Projectile.h"
@@ -36,7 +37,7 @@ void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	// ...
 }
 
-void UGunComponent::Fire(UTargetableComponent* lockedOnTarget)
+void UGunComponent::Fire(ATargetable* lockedOnTarget)
 {
 	if(fireTimer > 0)return;
 	if(!ProjectilePool)return;

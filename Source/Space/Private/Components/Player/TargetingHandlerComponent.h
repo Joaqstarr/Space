@@ -8,9 +8,9 @@
 
 
 class UCameraComponent;
-class UTargetableComponent;
+class ATargetable;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetChangedSignature, UTargetableComponent*, newTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetChangedSignature, ATargetable*, newTarget);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UTargetingHandlerComponent : public UActorComponent
@@ -20,13 +20,13 @@ class UTargetingHandlerComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UTargetingHandlerComponent();
-	UTargetableComponent* GetBestTarget();
+	ATargetable* GetBestTarget();
 
 	UFUNCTION(BlueprintCallable)
 	bool UpdateTarget();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UTargetableComponent> CurrentTarget = nullptr;
+	TObjectPtr<ATargetable> CurrentTarget = nullptr;
 
 	UPROPERTY(BlueprintAssignable,Category=Targeting)
 	FOnTargetChangedSignature OnTargetChanged;
@@ -41,13 +41,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	TArray<TObjectPtr<UTargetableComponent>> PotentialTargets;
+	TArray<TObjectPtr<ATargetable>> PotentialTargets;
 private:
 	UPROPERTY(EditAnywhere)
 	float TargetingRange = 10000;
 	
 
-	void SetCurrentTarget(UTargetableComponent* newTarget);
+	void SetCurrentTarget(ATargetable* newTarget);
 	void FindTargetsInRange();
 	void FilterTargetsWithScreen();
 	void CheckLockedTargetValidity();

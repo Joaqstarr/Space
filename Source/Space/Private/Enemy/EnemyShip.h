@@ -16,7 +16,4 @@ class AEnemyShip : public AShip
 	GENERATED_BODY()
 public:
 	AEnemyShip(const FObjectInitializer& OI);
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UTargetableComponent> TargetableComponent;
 };

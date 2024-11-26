@@ -3,8 +3,9 @@
 
 #include "Components/Player/TargetingHandlerComponent.h"
 
+#include "Actors/Targetable.h"
 #include "Camera/CameraComponent.h"
-#include "Components/TargetableComponent.h"
+#include "Actors/Targetable.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -14,14 +15,14 @@ UTargetingHandlerComponent::UTargetingHandlerComponent()
 
 }
 
-UTargetableComponent* UTargetingHandlerComponent::GetBestTarget()
+ATargetable* UTargetingHandlerComponent::GetBestTarget()
 {
-	UTargetableComponent* closest = nullptr;
+	ATargetable* closest = nullptr;
 	float closestDist {10000};
 
 	FVector2D center(0.5f,0.5f);
 	//GEngine->AddOnScreenDebugMessage(45, 8.1f, FColor::Magenta, FString::Printf(TEXT("Num: %d"), PotentialTargets.Num()));
-	for(UTargetableComponent* target : PotentialTargets)
+	for(ATargetable* target : PotentialTargets)
 	{
 		FVector2D targPos {target->GetScreenPosition()};
 		//GEngine->AddOnScreenDebugMessage(46, 8.1f, FColor::Purple, targPos.ToString());
@@ -43,7 +44,7 @@ UTargetableComponent* UTargetingHandlerComponent::GetBestTarget()
 
 bool UTargetingHandlerComponent::UpdateTarget()
 {
-	UTargetableComponent* best = GetBestTarget();
+	ATargetable* best = GetBestTarget();
 
 	SetCurrentTarget(best);
 	return CurrentTarget != nullptr;
@@ -74,7 +75,7 @@ void UTargetingHandlerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	CheckLockedTargetValidity();
 }
 
-void UTargetingHandlerComponent::SetCurrentTarget(UTargetableComponent* newTarget)
+void UTargetingHandlerComponent::SetCurrentTarget(ATargetable* newTarget)
 {
 	if(newTarget != CurrentTarget)
 	{
@@ -96,7 +97,7 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 	if(GetWorld()->OverlapMultiByChannel(overlapResults, ownerLocation, FQuat::Identity, ECC_GameTraceChannel1, sphere, params))
 	{
 		//GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Green, FString::Printf(TEXT("result count: %d"), overlapResults.Num()));
-		for(UTargetableComponent* target : PotentialTargets)
+		for(ATargetable* target : PotentialTargets)
 		{
 			if(target && !overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
 			{
@@ -118,7 +119,7 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("PotentialTarget name: %s"), *overlappedComponent->GetName()));
 
-				UTargetableComponent* targetable = Cast<UTargetableComponent>(overlappedComponent->GetOuter());
+				ATargetable* targetable = Cast<ATargetable>(overlappedComponent->GetOuter());
 				if(targetable && targetable->IsTargetable())
 				{
 					int count = PotentialTargets.Num();
@@ -141,12 +142,12 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 	FVector2D viewPortSize;
 	GEngine->GameViewport->GetViewportSize(viewPortSize);
 
-	for(UTargetableComponent* target : PotentialTargets)
+	for(ATargetable* target : PotentialTargets)
 	{
 		if(target == nullptr)continue;
 		FVector2D screenPosition;
 		
-		FVector targetLocation = target->GetComponentLocation();
+		FVector targetLocation = target->GetActorLocation();
 		
 		bool bIsOnScreen = UGameplayStatics::ProjectWorldToScreen(
 		GetWorld()->GetFirstPlayerController(),
@@ -156,13 +157,13 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 		target->SetScreenPosition(screenPosition, bIsOnScreen);
 	}
 	
-	PotentialTargets.RemoveAll([&](UTargetableComponent* target)
+	PotentialTargets.RemoveAll([&](ATargetable* target)
 	{
 		FVector2D screenPosition = target->GetScreenPosition();
 		return !IsValidScreenPosition(screenPosition);
 	});
 
-	for (UTargetableComponent* target : PotentialTargets)
+	for (ATargetable* target : PotentialTargets)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Target %s is on screen!"), *target->GetOwner()->GetName());
 	}

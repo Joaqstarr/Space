@@ -20,7 +20,7 @@ public:
 	UGunComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
-	void Fire(UTargetableComponent* lockedOnTarget);
+	void Fire(ATargetable* lockedOnTarget);
 	
 	
 protected:
