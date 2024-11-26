@@ -47,15 +47,15 @@ void ULookAtComponent::UpdateLookPosition(const FVector& newTargetPos, const FVe
 
 void ULookAtComponent::SmoothRotateTowardsTarget(const FVector& target, const float deltaTime)
 {
-	FRotator currentRotation = GetRelativeRotation();
+	FRotator currentRotation = GetComponentRotation();
 
 	const FVector direction = (target - GetComponentLocation()).GetSafeNormal();
+
 	FRotator targetRotation = direction.Rotation();
-	
 
 	FQuat newRotation {FQuat::Slerp(currentRotation.Quaternion(), targetRotation.Quaternion(), RotationSpeed * deltaTime)};
 
-	SetRelativeRotation(newRotation);
+	SetWorldRotation(newRotation);
 }
 
 // Called every frame
