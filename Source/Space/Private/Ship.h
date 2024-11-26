@@ -20,7 +20,7 @@ class AShip : public APawn
 public:
 	// Sets default values for this pawn's properties
 	AShip(const FObjectInitializer& OI);
-
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

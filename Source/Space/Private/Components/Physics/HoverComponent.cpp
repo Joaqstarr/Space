@@ -63,8 +63,12 @@ void UHoverComponent::CalculateAndAddHoverForce(const FVector& gravity)
 void UHoverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FVector gravity {GravityComponent->GetGravityDirection()};
+	
+	FVector gravity {FVector::Zero()};
+	if(GravityComponent)
+	{
+		gravity = GravityComponent->GetGravityDirection();
+	}
 	
 	CalculateAndAddHoverForce(gravity);
 	SmoothOrientToGravity(gravity, DeltaTime);

@@ -7,8 +7,10 @@
 #include "TargetingHandlerComponent.generated.h"
 
 
-	class UCameraComponent;
-	class UTargetableComponent;
+class UCameraComponent;
+class UTargetableComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetChangedSignature, UTargetableComponent*, newTarget);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UTargetingHandlerComponent : public UActorComponent
@@ -25,6 +27,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UTargetableComponent> CurrentTarget = nullptr;
+
+	UPROPERTY(BlueprintAssignable,Category=Targeting)
+	FOnTargetChangedSignature OnTargetChanged;
 
 protected:
 	// Called when the game starts

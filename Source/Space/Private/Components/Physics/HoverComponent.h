@@ -38,8 +38,8 @@ private:
 	float Dampening {0.5f};
 	
 	UPROPERTY()
-	UGravityComponent* GravityComponent;
-
+	TObjectPtr<UGravityComponent> GravityComponent;
+	
 	float lastHitDist;
 	float HooksLawDampen(float hitDistance);
 

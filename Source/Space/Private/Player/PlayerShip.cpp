@@ -2,6 +2,9 @@
 
 
 #include "Player/PlayerShip.h"
+
+#include "Components/HealthComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 
@@ -10,6 +13,11 @@ APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
 	TargetingManager = OI.CreateDefaultSubobject<UTargetingHandlerComponent>(this, FName("TargetingHandler"));
 
 	StimuliSource = OI.CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(this, FName("AiStimuliSource"));
+
+	TargetLockIndicator = OI.CreateDefaultSubobject<UWidgetComponent>(this, FName("TargetLockIndicator"));
+	TargetLockIndicator->SetWidgetSpace(EWidgetSpace::Screen);
+	TargetLockIndicator->SetVisibility(false);
+	TargetLockIndicator->SetDrawSize(FVector2D(30,30));
 	
 }
 
@@ -26,6 +34,13 @@ FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
 	return mousePosNorm;
 }
 
+void APlayerShip::BeginPlay()
+{
+	Super::BeginPlay();
+	TargetLockIndicator->SetWidget(TargetLockWidget);
+
+}
+
 FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
 {
 	MousePos.X += delta.X;
@@ -38,3 +53,5 @@ FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
 	}
 	return MousePos;
 }
+
+

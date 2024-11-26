@@ -25,6 +25,7 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 	HoverComponent = OI.CreateDefaultSubobject<UHoverComponent>(this, "Hover Component");
 	ShipStats = OI.CreateDefaultSubobject<UShipStats>(this, "Ship Statistics");
 
+	
 	HealthComponent = OI.CreateDefaultSubobject<UHealthComponent>(this, FName("HealthComponent"));
 }
 
@@ -32,7 +33,7 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 void AShip::BeginPlay()
 {
 	Super::BeginPlay();
-
+		
 }
 
 // Called every frame

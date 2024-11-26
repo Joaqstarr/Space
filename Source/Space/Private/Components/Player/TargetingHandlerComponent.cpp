@@ -43,7 +43,9 @@ UTargetableComponent* UTargetingHandlerComponent::GetBestTarget()
 
 bool UTargetingHandlerComponent::UpdateTarget()
 {
-	SetCurrentTarget(GetBestTarget());
+	UTargetableComponent* best = GetBestTarget();
+
+	SetCurrentTarget(best);
 	return CurrentTarget != nullptr;
 }
 
@@ -74,6 +76,10 @@ void UTargetingHandlerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 void UTargetingHandlerComponent::SetCurrentTarget(UTargetableComponent* newTarget)
 {
+	if(newTarget != CurrentTarget)
+	{
+		OnTargetChanged.Broadcast(newTarget);
+	}
 	CurrentTarget = newTarget;
 }
 
