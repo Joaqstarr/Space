@@ -18,10 +18,9 @@ UActorSpawnerComponent::UActorSpawnerComponent()
 void UActorSpawnerComponent::SpawnActor(TSubclassOf<AActor> toSpawn)
 {
 	if(toSpawn){
-		APawn* ownerAsPawn = Cast<APawn>(GetOwner());
 		FActorSpawnParameters spawnParameters;
 		spawnParameters.Owner = GetOwner();
-		spawnParameters.Instigator = ownerAsPawn;
+		spawnParameters.Instigator = GetOwner()->GetInstigator();
 		spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 		FVector spawnLocation {GetComponentLocation()};
@@ -29,6 +28,18 @@ void UActorSpawnerComponent::SpawnActor(TSubclassOf<AActor> toSpawn)
 
 		AActor* spawnedActor = GetWorld()->SpawnActor<AActor>(toSpawn, spawnLocation, spawnRotation, spawnParameters);
 		spawnedActor->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+		SpawnedActor = spawnedActor;
+
+		GetOwner()->OnDestroyed.AddDynamic(this, &UActorSpawnerComponent::DestroySpawnedActor);
+	}
+}
+
+void UActorSpawnerComponent::DestroySpawnedActor(AActor* actor)
+{
+	if(SpawnedActor)
+	{
+		GetWorld()->DestroyActor(SpawnedActor);
 	}
 }
 

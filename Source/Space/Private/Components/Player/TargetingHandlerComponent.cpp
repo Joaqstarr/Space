@@ -6,6 +6,7 @@
 #include "Actors/Targetable.h"
 #include "Camera/CameraComponent.h"
 #include "Actors/Targetable.h"
+#include "Chaos/ChaosPerfTest.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -163,10 +164,12 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 		return !IsValidScreenPosition(screenPosition);
 	});
 
+	/*
 	for (ATargetable* target : PotentialTargets)
 	{
+		if(!target)continue;
 		UE_LOG(LogTemp, Log, TEXT("Target %s is on screen!"), *target->GetOwner()->GetName());
-	}
+	}*/
 	//GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Purple, FString::Printf(TEXT("On Screen targets: %d"), PotentialTargets.Num()));
 
 }

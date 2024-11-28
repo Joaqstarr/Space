@@ -11,7 +11,8 @@ ATargetable::ATargetable()
 	PrimaryActorTick.bCanEverTick = true;
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(FName("Distance Check Sphere"));
 	CollisionSphere->SetCollisionObjectType(ECC_GameTraceChannel1);
-	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Block);
+	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionSphere->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 	CollisionSphere->SetSphereRadius(10);
 	SetRootComponent(CollisionSphere);
 

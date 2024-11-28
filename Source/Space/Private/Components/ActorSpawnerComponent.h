@@ -22,6 +22,8 @@ protected:
 	TSubclassOf<AActor> ActorToSpawn;
 private:
 	void SpawnActor(TSubclassOf<AActor> toSpawn);
+	UFUNCTION()
+	void DestroySpawnedActor(AActor* actor);
 
-		
+	AActor* SpawnedActor;
 };
