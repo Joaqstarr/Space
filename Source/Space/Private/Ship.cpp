@@ -5,7 +5,7 @@
 
 #include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/Physics/GravityComponent.h"
 #include "Components/Physics/HoverComponent.h"
 
@@ -15,11 +15,13 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	ShipMesh = OI.CreateDefaultSubobject<UStaticMeshComponent>(this, FName(TEXT("StaticShipMesh")));
-	ShipMesh->SetSimulatePhysics(true);
-	ShipMesh->SetEnableGravity(false);
-	ShipMesh->SetCollisionObjectType(ECC_Pawn);
-	SetRootComponent(ShipMesh);
+	ShipMeshComponent = OI.CreateDefaultSubobject<USkeletalMeshComponent>(this, FName(TEXT("ShipMesh")));
+	ShipMeshComponent->SetSimulatePhysics(true);
+	ShipMeshComponent->SetEnableGravity(false);
+	ShipMeshComponent->SetCollisionObjectType(ECC_Pawn);
+	ShipMeshComponent->SetSimulatePhysics(true);
+	ShipMeshComponent->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	SetRootComponent(ShipMeshComponent);
 	
 	GravityComponent = OI.CreateDefaultSubobject<UGravityComponent>(this, "Gravity Component");
 	HoverComponent = OI.CreateDefaultSubobject<UHoverComponent>(this, "Hover Component");
@@ -64,10 +66,10 @@ void AShip::AddPitch(float pitchAmount)
 //returns speed lost
 float AShip::ApplyBrakes(FVector movementDir) const
 {
-	if(!ShipMesh)return 0;
+	if(!ShipMeshComponent)return 0;
 	
 	movementDir.Normalize();
-	FVector vel {ShipMesh->GetComponentVelocity()};
+	FVector vel {ShipMeshComponent->GetComponentVelocity()};
 	
 	FVector velDir {vel};
 	velDir.Normalize();
@@ -80,16 +82,16 @@ float AShip::ApplyBrakes(FVector movementDir) const
 	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + movementDir * 500, FColor::Cyan);
 	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + velDir * 200, FColor::Red);
 
-	ShipMesh->AddForce(-transformedVel * ShipMesh->GetMass());
+	ShipMeshComponent->AddForce(-transformedVel * ShipMeshComponent->GetMass());
 
 	return transformedVel.Length();
 }
 
 void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const
 {
-	if(!ShipMesh)return;
+	if(!ShipMeshComponent)return;
 	
-	const FVector worldAngularVelocity {ShipMesh->GetPhysicsAngularVelocityInDegrees()};
+	const FVector worldAngularVelocity {ShipMeshComponent->GetPhysicsAngularVelocityInDegrees()};
 	const FVector localAngularVelocity {ActorToWorld().InverseTransformVectorNoScale(worldAngularVelocity)};
 
 	
@@ -101,18 +103,18 @@ void AShip::AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, f
 
 	const FVector localTorque{axis * torqueAmt};
 
-	const FVector worldTorque {ShipMesh->GetComponentTransform().TransformVectorNoScale(localTorque)};
+	const FVector worldTorque {ShipMeshComponent->GetComponentTransform().TransformVectorNoScale(localTorque)};
 
-	ShipMesh->AddTorqueInDegrees(worldTorque, NAME_None, true);
+	ShipMeshComponent->AddTorqueInDegrees(worldTorque, NAME_None, true);
 }
 
 void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const
 {
-	if (!ShipMesh || direction.IsNearlyZero())
+	if (!ShipMeshComponent || direction.IsNearlyZero())
 		return;
 
 	// Get current velocity in the desired direction
-	FVector currentVelocity = ShipMesh->GetComponentVelocity();
+	FVector currentVelocity = ShipMeshComponent->GetComponentVelocity();
 	float currentSpeedInDirection = FVector::DotProduct(currentVelocity, direction);
 
 	// Calculate the desired speed based on input
@@ -125,7 +127,7 @@ void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float
 	FVector force = direction.GetSafeNormal() * speedError * forceScale;
 
 	// Apply the force
-	ShipMesh->AddForce(force * ShipMesh->GetMass());
+	ShipMeshComponent->AddForce(force * ShipMeshComponent->GetMass());
 }
 
 void AShip::AddYaw(float yawAmount)
@@ -135,9 +137,9 @@ void AShip::AddYaw(float yawAmount)
 
 void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust)
 {
-	FVector forward {ShipMesh->GetForwardVector()};
-	FVector right {ShipMesh->GetRightVector()};
-	FVector up {ShipMesh->GetUpVector()};
+	FVector forward {ShipMeshComponent->GetForwardVector()};
+	FVector right {ShipMeshComponent->GetRightVector()};
+	FVector up {ShipMeshComponent->GetUpVector()};
 
 	ApplyMovementForce(forward, forwardThrust, ShipStats->ForwardSpeed, ShipStats->ForceScale);
 	ApplyMovementForce(right, sidewaysThrust, ShipStats->StrafeSpeed, ShipStats->ForceScale);
@@ -153,7 +155,7 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 	//GEngine->AddOnScreenDebugMessage(1, 0.1f, FColor::Cyan, FString::Printf(TEXT("brake amount: %f"), lost));
 
-	ShipMesh->AddForce(lost * movementDir * ShipMesh->GetMass());
+	ShipMeshComponent->AddForce(lost * movementDir * ShipMeshComponent->GetMass());
 	//ShipMesh->AddForce(forward * forwardThrust * ShipStats->ForwardSpeed, NAME_None, true);
 	//ShipMesh->AddForce(right * sidewaysThrust * ShipStats->StrafeSpeed, NAME_None, true);
 

@@ -11,6 +11,7 @@ class UHealthComponent;
 class UShipStats;
 class UGravityComponent;
 class UHoverComponent;
+class USkeletalMeshComponent;
 
 UCLASS()
 class AShip : public APawn
@@ -46,7 +47,7 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent> ShipMesh;
+	TObjectPtr<USkeletalMeshComponent> ShipMeshComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UGravityComponent> GravityComponent;

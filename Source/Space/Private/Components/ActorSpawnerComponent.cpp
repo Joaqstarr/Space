@@ -27,10 +27,19 @@ void UActorSpawnerComponent::SpawnActor(TSubclassOf<AActor> toSpawn)
 		FRotator spawnRotation {GetComponentRotation()};
 
 		AActor* spawnedActor = GetWorld()->SpawnActor<AActor>(toSpawn, spawnLocation, spawnRotation, spawnParameters);
-		spawnedActor->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 		SpawnedActor = spawnedActor;
+		if (spawnedActor)
+		{
+			spawnedActor->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
+			// Assuming the spawned actor has a root component with collision
+			UPrimitiveComponent* rootComponent = Cast<UPrimitiveComponent>(spawnedActor->GetRootComponent());
+			if (rootComponent && GetOwner())
+			{
+				rootComponent->IgnoreActorWhenMoving(GetOwner(), true); // Ignore owner collision
+			}
+		}
 		GetOwner()->OnDestroyed.AddDynamic(this, &UActorSpawnerComponent::DestroySpawnedActor);
 	}
 }

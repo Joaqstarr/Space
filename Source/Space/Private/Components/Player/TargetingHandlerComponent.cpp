@@ -25,6 +25,7 @@ ATargetable* UTargetingHandlerComponent::GetBestTarget()
 	//GEngine->AddOnScreenDebugMessage(45, 8.1f, FColor::Magenta, FString::Printf(TEXT("Num: %d"), PotentialTargets.Num()));
 	for(ATargetable* target : PotentialTargets)
 	{
+		if(!target)continue;
 		FVector2D targPos {target->GetScreenPosition()};
 		//GEngine->AddOnScreenDebugMessage(46, 8.1f, FColor::Purple, targPos.ToString());
 
@@ -160,6 +161,7 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 	
 	PotentialTargets.RemoveAll([&](ATargetable* target)
 	{
+		if(!target)return true;
 		FVector2D screenPosition = target->GetScreenPosition();
 		return !IsValidScreenPosition(screenPosition);
 	});
