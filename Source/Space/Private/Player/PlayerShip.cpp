@@ -16,8 +16,9 @@ APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
 
 	TargetLockIndicator = OI.CreateDefaultSubobject<UWidgetComponent>(this, FName("TargetLockIndicator"));
 	TargetLockIndicator->SetWidgetSpace(EWidgetSpace::Screen);
-	TargetLockIndicator->SetVisibility(false);
+	TargetLockIndicator->SetVisibility(true);
 	TargetLockIndicator->SetDrawSize(FVector2D(30,30));
+	TargetLockIndicator->SetupAttachment(ShipMeshComponent);
 	
 }
 

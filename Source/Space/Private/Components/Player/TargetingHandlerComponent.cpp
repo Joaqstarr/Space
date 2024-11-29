@@ -5,8 +5,7 @@
 
 #include "Actors/Targetable.h"
 #include "Camera/CameraComponent.h"
-#include "Actors/Targetable.h"
-#include "Chaos/ChaosPerfTest.h"
+#include "Components/SphereComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -103,7 +102,7 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 		{
 			if(target && !overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
 			{
-				return res.GetComponent() == Cast<UPrimitiveComponent>(target);
+				return res.GetComponent() == Cast<UPrimitiveComponent>(target->CollisionSphere);
 			}))
 			{
 				if(target != nullptr)
