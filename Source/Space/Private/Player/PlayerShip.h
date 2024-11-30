@@ -4,21 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "../Ship.h"
+#include "AbilitySystemInterface.h"
 #include "PlayerShip.generated.h"
 
+class UGameplayAbility;
+class UPlayerShipAbilitySystemComponent;
 class ATargetable;
 class UWidgetComponent;
-class UAIPerceptionStimuliSourceComponent;class UTargetingHandlerComponent;
+class UAIPerceptionStimuliSourceComponent;
+class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
 
 UCLASS()
-class APlayerShip : public AShip
+class APlayerShip : public AShip, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 public:
 	APlayerShip(const FObjectInitializer& OI);
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetMousePos(bool affectedByDeadzone) const;
+	UFUNCTION(BlueprintCallable)
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintCallable)
@@ -38,8 +44,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(ClampMin="0.0", ClampMax="1.0", UIMin="0.0", UIMax="1.0"))
 	float MouseDeadzone{0.25f};
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UPlayerShipAbilitySystemComponent> AbilitySystemComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 private:
 	UPROPERTY(EditDefaultsOnly, Category=Widgets)
 	TObjectPtr<UUserWidget> TargetLockWidget;
+
+	void GiveDefaultAbilities();
 };
