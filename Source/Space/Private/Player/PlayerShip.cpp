@@ -2,7 +2,6 @@
 
 
 #include "Player/PlayerShip.h"
-#include "Abilities/PlayerShipAbilitySystemComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -15,12 +14,11 @@ APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
 
 	TargetLockIndicator = OI.CreateDefaultSubobject<UWidgetComponent>(this, FName("TargetLockIndicator"));
 	TargetLockIndicator->SetWidgetSpace(EWidgetSpace::Screen);
-	TargetLockIndicator->SetVisibility(true);
+	TargetLockIndicator->SetVisibility(false);
 	TargetLockIndicator->SetDrawSize(FVector2D(30,30));
 	TargetLockIndicator->SetupAttachment(ShipMeshComponent);
 
-	AbilitySystemComponent = OI.CreateDefaultSubobject<UPlayerShipAbilitySystemComponent>(this, FName("AbilitySystemComponent"));
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+
 }
 
 FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
@@ -36,19 +34,14 @@ FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
 	return mousePosNorm;
 }
 
-UAbilitySystemComponent* APlayerShip::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
-}
+
 
 void APlayerShip::BeginPlay()
 {
 	Super::BeginPlay();
 	TargetLockIndicator->SetWidget(TargetLockWidget);
 
-	AbilitySystemComponent->InitAbilityActorInfo(GetController(), this);
 
-	GiveDefaultAbilities();
 
 }
 
@@ -65,17 +58,5 @@ FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
 	return MousePos;
 }
 
-void APlayerShip::GiveDefaultAbilities()
-{
-	check(AbilitySystemComponent);
-	if(!HasAuthority()) return;
-	
-	for(TSubclassOf<UGameplayAbility> abilityClass : DefaultAbilities)
-	{
-		const FGameplayAbilitySpec abilitySpec(abilityClass, 1);
-		
-		AbilitySystemComponent->GiveAbility(abilitySpec);
-	}
-}
 
 

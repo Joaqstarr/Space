@@ -1,10 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PlayerShipAbilitySystemComponent.h"
+#include "ShipAbilitySystemComponent.h"
 
 
-UPlayerShipAbilitySystemComponent::UPlayerShipAbilitySystemComponent()
+UShipAbilitySystemComponent::UShipAbilitySystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -13,7 +13,7 @@ UPlayerShipAbilitySystemComponent::UPlayerShipAbilitySystemComponent()
 
 
 // Called when the game starts
-void UPlayerShipAbilitySystemComponent::BeginPlay()
+void UShipAbilitySystemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -23,7 +23,7 @@ void UPlayerShipAbilitySystemComponent::BeginPlay()
 
 
 // Called every frame
-void UPlayerShipAbilitySystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+void UShipAbilitySystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                                       FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);

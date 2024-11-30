@@ -2,7 +2,7 @@
 
 
 #include "Ship.h"
-
+#include "Player/Abilities/ShipAbilitySystemComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -29,13 +29,24 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 
 	
 	HealthComponent = OI.CreateDefaultSubobject<UHealthComponent>(this, FName("HealthComponent"));
+
+	AbilitySystemComponent = OI.CreateDefaultSubobject<UShipAbilitySystemComponent>(this, FName("AbilitySystemComponent"));
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 }
 
 // Called when the game starts or when spawned
 void AShip::BeginPlay()
 {
 	Super::BeginPlay();
-		
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(GetController(), this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AbilitySystemComponent is NULL in BeginPlay."));
+	}
+	GiveDefaultAbilities();
 }
 
 // Called every frame
@@ -161,3 +172,20 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 }
 
+void AShip::GiveDefaultAbilities()
+{
+	check(AbilitySystemComponent);
+	if(!HasAuthority()) return;
+	
+	for(TSubclassOf<UGameplayAbility> abilityClass : DefaultAbilities)
+	{
+		const FGameplayAbilitySpec abilitySpec(abilityClass, 1);
+		
+		AbilitySystemComponent->GiveAbility(abilitySpec);
+	}
+}
+
+UAbilitySystemComponent* AShip::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}

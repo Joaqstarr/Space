@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "PlayerShipAbilitySystemComponent.generated.h"
+#include "ShipAbilitySystemComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SPACE_API UPlayerShipAbilitySystemComponent : public UAbilitySystemComponent
+class SPACE_API UShipAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UPlayerShipAbilitySystemComponent();
+	UShipAbilitySystemComponent();
 
 protected:
 	// Called when the game starts

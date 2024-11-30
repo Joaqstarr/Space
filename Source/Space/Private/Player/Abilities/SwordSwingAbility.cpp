@@ -33,5 +33,6 @@ void USwordSwingAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 
 void USwordSwingAbility::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	CurrentActorInfo->GetAnimInstance()->OnMontageEnded.Remove(this, FName("MontageEnded"));
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
