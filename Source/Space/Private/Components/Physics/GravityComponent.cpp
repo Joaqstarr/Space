@@ -2,6 +2,9 @@
 
 
 #include "Components/Physics/GravityComponent.h"
+
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "Components/SceneComponent.h"
 #include "Components/MeshComponent.h"
 #include "Utility/PriorityQueue.h"
@@ -15,19 +18,9 @@ UGravityComponent::UGravityComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 
+	GravityTag = FGameplayTag::RequestGameplayTag(FName("Physics.Gravity"));
 }
 
-
-// Called when the game starts
-void UGravityComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	
-}
-
-
-// Called every frame
 void UGravityComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -50,9 +43,36 @@ void UGravityComponent::ExitedGravityVolume(UGravityVolume* volume)
 	GravityZonesQueue.Remove(volume);
 }
 
+void UGravityComponent::RemoveGravityTag(const IAbilitySystemInterface& abilityOwner) const
+{
+	if (abilityOwner.GetAbilitySystemComponent()->HasMatchingGameplayTag(GravityTag))
+	{
+		abilityOwner.GetAbilitySystemComponent()->RemoveLooseGameplayTag(GravityTag);
+	}
+}
+
+void UGravityComponent::AddGravityTag(const IAbilitySystemInterface& abilityOwner) const
+{
+	if (!abilityOwner.GetAbilitySystemComponent()->HasMatchingGameplayTag(GravityTag))
+	{
+		abilityOwner.GetAbilitySystemComponent()->AddLooseGameplayTag(GravityTag);
+	}
+}
+
 void UGravityComponent::ApplyGravity() const
 {
-
+	if(IAbilitySystemInterface* abilityOwner = Cast<IAbilitySystemInterface>(GetOwner()))
+	{
+		//if no gravity
+		if(GetGravityDirection().IsNearlyZero()){
+			
+			RemoveGravityTag(*abilityOwner);
+			return;
+		}
+		//if has gravity add tag
+		AddGravityTag(*abilityOwner);
+	}
+	
 	USceneComponent* rootComp = GetOwner()->GetRootComponent();
 	if(!rootComp ) return;
 

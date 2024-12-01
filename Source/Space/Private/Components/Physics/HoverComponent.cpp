@@ -3,16 +3,13 @@
 
 #include "Components/Physics/HoverComponent.h"
 #include "GravityComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-
+#include "AbilitySystemComponent.h"
 // Sets default values for this component's properties
 UHoverComponent::UHoverComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	HoverTag = FGameplayTag::RequestGameplayTag(FName("Physics.Hovering"));
 }
 
 
@@ -59,6 +56,22 @@ void UHoverComponent::CalculateAndAddHoverForce(const FVector& gravity)
 	}
 }
 
+void UHoverComponent::RemoveHoverTag(const IAbilitySystemInterface& abilityOwner) const
+{
+	if (abilityOwner.GetAbilitySystemComponent()->HasMatchingGameplayTag(HoverTag))
+	{
+		abilityOwner.GetAbilitySystemComponent()->RemoveLooseGameplayTag(HoverTag);
+	}
+}
+
+void UHoverComponent::AddHoverTag(const IAbilitySystemInterface& abilityOwner) const
+{
+	if (!abilityOwner.GetAbilitySystemComponent()->HasMatchingGameplayTag(HoverTag))
+	{
+		abilityOwner.GetAbilitySystemComponent()->AddLooseGameplayTag(HoverTag);
+	}
+}
+
 // Called every frame
 void UHoverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -68,6 +81,21 @@ void UHoverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	if(GravityComponent)
 	{
 		gravity = GravityComponent->GetGravityDirection();
+	}
+
+	if(IAbilitySystemInterface* abilityOwner = Cast<IAbilitySystemInterface>(GetOwner()))
+	{
+		//if no gravity
+		if(gravity.IsNearlyZero()){
+			
+			RemoveHoverTag(*abilityOwner);
+			return;
+		}
+		//if has gravity add tag
+		if(HoverStrength > 0.1f)
+		{
+			AddHoverTag(*abilityOwner);
+		}
 	}
 	
 	CalculateAndAddHoverForce(gravity);

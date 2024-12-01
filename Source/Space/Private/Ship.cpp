@@ -21,6 +21,7 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 	ShipMeshComponent->SetCollisionObjectType(ECC_Pawn);
 	ShipMeshComponent->SetSimulatePhysics(true);
 	ShipMeshComponent->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	ShipMeshComponent->SetGenerateOverlapEvents(true);
 	SetRootComponent(ShipMeshComponent);
 	
 	GravityComponent = OI.CreateDefaultSubobject<UGravityComponent>(this, "Gravity Component");

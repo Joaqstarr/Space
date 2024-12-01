@@ -4,11 +4,14 @@
 
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "Utility/PriorityQueue.h"
 #include "GravityComponent.generated.h"
 
 
+struct FGameplayTag;
 class UGravityVolume;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -25,15 +28,16 @@ public:
 	void EnteredGravityVolume(UGravityVolume* volume);
 	void ExitedGravityVolume(UGravityVolume* volume);
 
+
 	FVector GetGravityDirection() const;
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector DefaultGravityDirection;
 private:
 	void ApplyGravity() const;
 	TPriorityQueue<UGravityVolume*> GravityZonesQueue;
-	
+	FGameplayTag GravityTag;
+	void RemoveGravityTag(const IAbilitySystemInterface& abilityOwner) const;
+	void AddGravityTag(const IAbilitySystemInterface& abilityOwner) const;
 };
