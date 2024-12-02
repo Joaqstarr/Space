@@ -78,7 +78,7 @@ void UHoverComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	FVector gravity {FVector::Zero()};
-	if(GravityComponent)
+	if(GravityComponent != nullptr)
 	{
 		gravity = GravityComponent->GetGravityDirection();
 	}

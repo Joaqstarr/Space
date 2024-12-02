@@ -8,6 +8,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/Physics/GravityComponent.h"
 #include "Components/Physics/HoverComponent.h"
+#include "Player/Abilities/DashAbility.h"
+#include "Utility/VectorPayload.h"
 
 // Sets default values
 AShip::AShip(const FObjectInitializer& OI) : Super(OI)
@@ -184,6 +186,21 @@ void AShip::GiveDefaultAbilities()
 		
 		AbilitySystemComponent->GiveAbility(abilitySpec);
 	}
+}
+
+void AShip::TryDash(FVector inputDirection)
+{
+	UVectorPayload* payload = NewObject<UVectorPayload>();
+	payload->VectorData = inputDirection;
+	
+	FGameplayEventData eventData;
+	eventData.Instigator = this;
+	eventData.Target = this;
+	eventData.OptionalObject = payload;
+	eventData.EventTag = FGameplayTag::RequestGameplayTag(FName("Ship.Action.Dash"));
+	
+
+	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
 }
 
 UAbilitySystemComponent* AShip::GetAbilitySystemComponent() const

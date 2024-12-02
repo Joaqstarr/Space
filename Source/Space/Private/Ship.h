@@ -48,7 +48,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
-
+protected:
+	void GiveDefaultAbilities();
+	UFUNCTION(BlueprintCallable)
+	void TryDash(FVector inputDirection);
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USkeletalMeshComponent> ShipMeshComponent;
@@ -72,7 +75,6 @@ protected:
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 
 
-	void GiveDefaultAbilities();
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;
