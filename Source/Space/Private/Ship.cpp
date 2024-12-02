@@ -2,6 +2,8 @@
 
 
 #include "Ship.h"
+
+#include "AttributeSets/HealthSet.h"
 #include "Player/Abilities/ShipAbilitySystemComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
@@ -17,7 +19,7 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	ShipMeshComponent = OI.CreateDefaultSubobject<USkeletalMeshComponent>(this, FName(TEXT("ShipMesh")));
+	ShipMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("ShipMesh")));
 	ShipMeshComponent->SetSimulatePhysics(true);
 	ShipMeshComponent->SetEnableGravity(false);
 	ShipMeshComponent->SetCollisionObjectType(ECC_Pawn);
@@ -26,15 +28,18 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 	ShipMeshComponent->SetGenerateOverlapEvents(true);
 	SetRootComponent(ShipMeshComponent);
 	
-	GravityComponent = OI.CreateDefaultSubobject<UGravityComponent>(this, "Gravity Component");
-	HoverComponent = OI.CreateDefaultSubobject<UHoverComponent>(this, "Hover Component");
-	ShipStats = OI.CreateDefaultSubobject<UShipStats>(this, "Ship Statistics");
+	GravityComponent = CreateDefaultSubobject<UGravityComponent>("Gravity Component");
+	HoverComponent = CreateDefaultSubobject<UHoverComponent>("Hover Component");
+	ShipStats = CreateDefaultSubobject<UShipStats>("Ship Statistics");
 
 	
-	HealthComponent = OI.CreateDefaultSubobject<UHealthComponent>(this, FName("HealthComponent"));
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("HealthComponent"));
 
-	AbilitySystemComponent = OI.CreateDefaultSubobject<UShipAbilitySystemComponent>(this, FName("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UShipAbilitySystemComponent>( FName("AbilitySystemComponent"));
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+
+	HealthSet = CreateDefaultSubobject<UHealthSet>(FName("HealthSet"));
+	AbilitySystemComponent->AddAttributeSetSubobject<UHealthSet>(HealthSet);
 }
 
 // Called when the game starts or when spawned

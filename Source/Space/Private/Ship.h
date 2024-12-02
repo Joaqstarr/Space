@@ -8,6 +8,7 @@
 #include "Ship.generated.h"
 
 
+class UHealthSet;
 class UGameplayAbility;
 class UHealthComponent;
 class UShipStats;
@@ -68,13 +69,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+	/*
+	 *	GAMEPLAY ABILITY SYSTEM
+	 */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UShipAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UHealthSet> HealthSet;
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;
