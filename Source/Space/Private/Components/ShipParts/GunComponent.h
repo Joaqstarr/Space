@@ -7,6 +7,7 @@
 #include "GunComponent.generated.h"
 
 
+class UAbilitySystemComponent;
 class UTargetableComponent;
 class UPoolManagerComponent;
 
@@ -32,6 +33,10 @@ protected:
 	int32 RoundsPerMinute = 60;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Turret)
 	TObjectPtr<UPoolManagerComponent> ProjectilePool;
+	
 private:
-	float fireTimer = 0;;
+	float fireTimer = 0;
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };

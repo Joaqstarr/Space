@@ -6,13 +6,13 @@
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 
-APlayerShip::APlayerShip(const FObjectInitializer& OI) : AShip(OI)
+APlayerShip::APlayerShip() : AShip()
 {
-	TargetingManager = OI.CreateDefaultSubobject<UTargetingHandlerComponent>(this, FName("TargetingHandler"));
+	TargetingManager = CreateDefaultSubobject<UTargetingHandlerComponent>(FName("TargetingHandler"));
 
-	StimuliSource = OI.CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(this, FName("AiStimuliSource"));
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(FName("AiStimuliSource"));
 
-	TargetLockIndicator = OI.CreateDefaultSubobject<UWidgetComponent>(this, FName("TargetLockIndicator"));
+	TargetLockIndicator = CreateDefaultSubobject<UWidgetComponent>(FName("TargetLockIndicator"));
 	TargetLockIndicator->SetWidgetSpace(EWidgetSpace::Screen);
 	TargetLockIndicator->SetVisibility(false);
 	TargetLockIndicator->SetDrawSize(FVector2D(30,30));

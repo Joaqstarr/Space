@@ -6,6 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+class UHealthSet;
+struct FOnAttributeChangeData;
+class UAbilitySystemComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthDepletedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChangedSignature, int, NewHealth, int, MaxHealth);
 
@@ -23,12 +27,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetMaxHealth() const {return MaxHealth;}
-	
-	UFUNCTION(BlueprintCallable)
-	void SetMaxHealth(int newMax);
-	
-	UFUNCTION(BlueprintCallable)
-	void UpdateHealth(int DeltaHealth);
 
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthChangedSignature OnHealthChanged;
@@ -36,20 +34,23 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthDepletedSignature OnHealthDepleted;
 protected:
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UHealthSet> HealthSet;
+protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 private:
 	UPROPERTY(VisibleInstanceOnly, Category="Default")
-	int Health = 100;
-	UPROPERTY(EditDefaultsOnly, Category="Default")
-	int MaxHealth = 100;
-	UPROPERTY(EditAnywhere, Category="Default")
-	float InvulnerabilityTime = 0;
-	UPROPERTY()
-	FTimerHandle IFramesTimer;
+	float Health = 100.0f;
+	UPROPERTY(VisibleAnywhere, Category="Default")
+	float MaxHealth = 100;
 
-	bool IsInvulnerable = false;
+	void HealthAttributeChanged(const FOnAttributeChangeData& data);
+
+	void MaxHealthAttributeChanged(const FOnAttributeChangeData& data);
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> ASC;
 };

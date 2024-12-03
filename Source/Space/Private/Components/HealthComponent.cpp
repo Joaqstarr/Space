@@ -3,49 +3,35 @@
 
 #include "Components/HealthComponent.h"
 
-// Sets default values for this component's properties
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
+#include "AttributeSets/HealthSet.h"
+
 UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
 }
 
-
-void UHealthComponent::SetMaxHealth(int newMax)
-{
-	MaxHealth = newMax;
-	Health = FMath::Clamp(Health, 0, MaxHealth);
-}
-
-void UHealthComponent::UpdateHealth(int DeltaHealth)
-{
-	if(IsInvulnerable)return;
-	if(DeltaHealth == 0) return;
-
-	Health += DeltaHealth;
-	Health = FMath::Clamp(Health, 0, MaxHealth);
-
-	OnHealthChanged.Broadcast(Health, MaxHealth);
-
-	if(Health <= 0)
-	{
-		OnHealthDepleted.Broadcast();
-	}
-
-	if(InvulnerabilityTime > 0)
-	{
-		IsInvulnerable = true;
-		auto resetVulnerability = [&]() {IsInvulnerable = false;};
-		GetOwner()->GetWorldTimerManager().SetTimer(IFramesTimer, resetVulnerability, InvulnerabilityTime, false);
-	}
-}
-
-// Called when the game starts
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	IAbilitySystemInterface* asASC = Cast<IAbilitySystemInterface>(GetOwner());
+	if(asASC)
+	{
+		ASC = asASC->GetAbilitySystemComponent();
+	}
+	if(ASC)
+	{
+		HealthSet = NewObject<UHealthSet>();
+		ASC->AddAttributeSetSubobject<UHealthSet>(HealthSet);
+		
+		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
+		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetMaxHealthAttribute()).AddUObject(this, &UHealthComponent::MaxHealthAttributeChanged);
 
-	Health = MaxHealth;
+		bool found = false;
+		MaxHealth = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+	}
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeDamage);
 	
 }
@@ -53,7 +39,22 @@ void UHealthComponent::BeginPlay()
 void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	UpdateHealth(-Damage);
+	//TODO apply damage effect
+}
+
+void UHealthComponent::HealthAttributeChanged(const FOnAttributeChangeData& data)
+{
+	OnHealthChanged.Broadcast(data.NewValue, MaxHealth);
+	Health = data.NewValue;
+	if(data.NewValue <= 0)
+	{
+		OnHealthDepleted.Broadcast();
+	}
+}
+
+void UHealthComponent::MaxHealthAttributeChanged(const FOnAttributeChangeData& data)
+{
+	MaxHealth = data.NewValue;
 }
 
 

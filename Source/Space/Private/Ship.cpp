@@ -3,7 +3,6 @@
 
 #include "Ship.h"
 
-#include "AttributeSets/HealthSet.h"
 #include "Player/Abilities/ShipAbilitySystemComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
@@ -14,7 +13,7 @@
 #include "Utility/VectorPayload.h"
 
 // Sets default values
-AShip::AShip(const FObjectInitializer& OI) : Super(OI)
+AShip::AShip() : Super()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -35,11 +34,6 @@ AShip::AShip(const FObjectInitializer& OI) : Super(OI)
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("HealthComponent"));
 
-	AbilitySystemComponent = CreateDefaultSubobject<UShipAbilitySystemComponent>( FName("AbilitySystemComponent"));
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-
-	HealthSet = CreateDefaultSubobject<UHealthSet>(FName("HealthSet"));
-	AbilitySystemComponent->AddAttributeSetSubobject<UHealthSet>(HealthSet);
 }
 
 // Called when the game starts or when spawned
@@ -54,7 +48,6 @@ void AShip::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AbilitySystemComponent is NULL in BeginPlay."));
 	}
-	GiveDefaultAbilities();
 }
 
 // Called every frame
@@ -180,19 +173,6 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 }
 
-void AShip::GiveDefaultAbilities()
-{
-	check(AbilitySystemComponent);
-	if(!HasAuthority()) return;
-	
-	for(TSubclassOf<UGameplayAbility> abilityClass : DefaultAbilities)
-	{
-		const FGameplayAbilitySpec abilitySpec(abilityClass, 1);
-		
-		AbilitySystemComponent->GiveAbility(abilitySpec);
-	}
-}
-
 void AShip::TryDash(FVector inputDirection)
 {
 	UVectorPayload* payload = NewObject<UVectorPayload>();
@@ -206,9 +186,4 @@ void AShip::TryDash(FVector inputDirection)
 	
 
 	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
-}
-
-UAbilitySystemComponent* AShip::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
 }

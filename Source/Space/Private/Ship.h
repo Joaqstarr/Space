@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "AbilitySystemInterface.h"
+#include "SpacePawn.h"
 #include "Ship.generated.h"
 
 
@@ -18,15 +18,14 @@ class USkeletalMeshComponent;
 class UShipAbilitySystemComponent;
 
 UCLASS()
-class AShip : public APawn, public IAbilitySystemInterface
+class AShip : public ASpacePawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AShip(const FObjectInitializer& OI);
-	UFUNCTION(BlueprintCallable)
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	AShip();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,7 +49,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 protected:
-	void GiveDefaultAbilities();
 	UFUNCTION(BlueprintCallable)
 	void TryDash(FVector inputDirection);
 protected:
@@ -69,17 +67,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
-	/*
-	 *	GAMEPLAY ABILITY SYSTEM
-	 */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<UShipAbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<UHealthSet> HealthSet;
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;

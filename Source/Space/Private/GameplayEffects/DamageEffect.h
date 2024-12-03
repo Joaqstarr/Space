@@ -3,17 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Ship.h"
-#include "EnemyShip.generated.h"
+#include "GameplayEffect.h"
+#include "DamageEffect.generated.h"
 
-class UTargetableComponent;
 /**
  * 
  */
 UCLASS()
-class AEnemyShip : public AShip
+class UDamageEffect : public UGameplayEffect
 {
 	GENERATED_BODY()
 public:
-	AEnemyShip();
+	UDamageEffect();
 };

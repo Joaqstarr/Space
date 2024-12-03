@@ -19,7 +19,7 @@ class APlayerShip : public AShip
 {
 	GENERATED_BODY()
 public:
-	APlayerShip(const FObjectInitializer& OI);
+	APlayerShip();
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetMousePos(bool affectedByDeadzone) const;
 

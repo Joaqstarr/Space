@@ -23,7 +23,6 @@ public:
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UAnimMontage> SwordSwingMontage;
-
 private:
 	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);

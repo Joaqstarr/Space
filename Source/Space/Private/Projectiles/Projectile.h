@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
 #include "Components/ObjectPooling/PoolableInterface.h"
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+struct FGameplayEffectSpec;
 class ATargetable;
 class USphereComponent;
 class UProjectileMovementComponent;
@@ -27,7 +29,8 @@ public:
 	virtual bool IsInactive_Implementation() override;
 
 	void SetTarget(ATargetable* target);
-	
+	void InitializeProjectile(FGameplayEffectSpecHandle specHandle, AActor* instigatorActor);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,8 +46,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
-	
 private:
+	UFUNCTION()
+	void OnSphereComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse, const FHitResult& Hit );
 	UPROPERTY()
 	FTimerHandle DespawnTimerHandle;
 
@@ -52,4 +57,10 @@ private:
 	void OnProjectileMCActivated( UActorComponent* Component, bool bReset);
 
 	void DisableHomingOffAngle(float minDot);
+	
+	// Gameplay Effect Spec Handle passed to the projectile
+	FGameplayEffectSpecHandle GameplayEffectSpecHandle;
+
+	// The actor that fired the projectile
+	TWeakObjectPtr<AActor> InstigatorActor;
 };

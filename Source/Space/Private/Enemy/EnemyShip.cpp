@@ -7,7 +7,7 @@
 #include "Components/TargetableComponent.h"
 #include "Components/WidgetComponent.h"
 
-AEnemyShip::AEnemyShip(const FObjectInitializer& OI) : Super(OI)
+AEnemyShip::AEnemyShip() : Super()
 {
 }
 
