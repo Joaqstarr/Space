@@ -22,18 +22,20 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
 	void Fire(ATargetable* lockedOnTarget);
-	
+	void SetDamage(float newDamage) {Damage = newDamage;};
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Gun Stats")
+	float Damage = 10;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Gun Stats")
 	int32 RoundsPerMinute = 60;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Turret)
 	TObjectPtr<UPoolManagerComponent> ProjectilePool;
-	
 private:
 	float fireTimer = 0;
 

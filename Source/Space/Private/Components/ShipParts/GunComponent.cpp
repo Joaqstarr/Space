@@ -78,7 +78,7 @@ void UGunComponent::Fire(ATargetable* lockedOnTarget)
 				FGameplayEffectSpec* spec = SpecHandle.Data.Get();
 				if(spec)
 				{
-					spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), -10.f);
+					spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), -Damage);
 				}
 			}
 			asProjectile->InitializeProjectile(SpecHandle,GetOwner());
