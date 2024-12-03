@@ -3,6 +3,8 @@
 
 #include "Player/Abilities/DashAbility.h"
 
+#include "AbilitySystemComponent.h"
+#include "AttributeSets/DashSet.h"
 #include "Utility/VectorPayload.h"
 
 UDashAbility::UDashAbility()
@@ -39,8 +41,13 @@ void UDashAbility::Dash(const FVector& inputDir)
 	if(root)
 	{
 		FVector transformedDir { root->GetComponentTransform().TransformVector(swizzled)};
-		
-		root->AddImpulse(transformedDir * 10000, NAME_None, true);
+
+		float strength = 0;
+		if(const UDashSet* dashSet = CurrentActorInfo->AbilitySystemComponent->GetSet<UDashSet>())
+		{
+			strength = dashSet->GetDashStrength();
+		}
+		root->AddImpulse(transformedDir * strength, NAME_None, true);
 	}
 }
 

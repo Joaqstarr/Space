@@ -35,7 +35,7 @@ public:
 	FOnHealthDepletedSignature OnHealthDepleted;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<UHealthSet> HealthSet;
+	UHealthSet* HealthSet;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

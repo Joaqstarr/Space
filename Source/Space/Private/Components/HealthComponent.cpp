@@ -11,6 +11,7 @@ UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
+
 }
 
 void UHealthComponent::BeginPlay()
@@ -24,7 +25,7 @@ void UHealthComponent::BeginPlay()
 	if(ASC)
 	{
 		HealthSet = NewObject<UHealthSet>();
-		ASC->AddAttributeSetSubobject<UHealthSet>(HealthSet);
+		ASC->AddAttributeSetSubobject(HealthSet);
 		
 		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
 		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetMaxHealthAttribute()).AddUObject(this, &UHealthComponent::MaxHealthAttributeChanged);

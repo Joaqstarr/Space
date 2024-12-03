@@ -3,6 +3,7 @@
 
 #include "Ship.h"
 
+#include "AttributeSets/DashSet.h"
 #include "Player/Abilities/ShipAbilitySystemComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/ShipStats.h"
@@ -34,6 +35,11 @@ AShip::AShip() : Super()
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("HealthComponent"));
 
+	if (AbilitySystemComponent)
+	{
+		DashAttributeSet = CreateDefaultSubobject<UDashSet>(TEXT("DashSet"));
+		AbilitySystemComponent->AddAttributeSetSubobject(DashAttributeSet);
+	}
 }
 
 // Called when the game starts or when spawned

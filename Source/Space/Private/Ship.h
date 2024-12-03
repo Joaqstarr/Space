@@ -8,6 +8,7 @@
 #include "Ship.generated.h"
 
 
+class UDashSet;
 class UHealthSet;
 class UGameplayAbility;
 class UHealthComponent;
@@ -67,7 +68,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
-
+	UPROPERTY(BlueprintReadOnly)
+	UDashSet* DashAttributeSet;
 private:
 	float LastYawSpeed {0};
 	float ApplyBrakes(FVector movementDir) const;

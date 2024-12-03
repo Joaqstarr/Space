@@ -2,14 +2,13 @@
 
 
 #include "AttributeSets/HealthSet.h"
-
-#include <functional>
-
 #include "AbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "GameplayEffectExtension.h"
 
-UHealthSet::UHealthSet() : UAttributeSet()
+UHealthSet::UHealthSet() : USpaceAttributeSet()
 {
+	InitHealth(100);
 }
 
 void UHealthSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -18,7 +17,7 @@ void UHealthSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& 
 
 	if(Attribute == GetHealthAttribute())
 	{
-		GEngine->AddOnScreenDebugMessage(87, 5.0, FColor::Red, FString::Printf(TEXT("Health set to %f"), NewValue));
+		//GEngine->AddOnScreenDebugMessage(87, 5.0, FColor::Red, FString::Printf(TEXT("Health set to %f"), NewValue));
 		NewValue = (NewValue > 0) ? NewValue : 0;
 	}
 }
@@ -26,7 +25,7 @@ void UHealthSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& 
 void UHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-
+	
 }
 
 void UHealthSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
