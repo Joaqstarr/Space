@@ -179,6 +179,8 @@ void UTargetingHandlerComponent::CheckLockedTargetValidity()
 {
 	if(!CurrentTarget)return;
 
-	if(!IsValidScreenPosition(CurrentTarget->GetScreenPosition()))SetCurrentTarget(nullptr);
+	//if out of range, lose target
+	if(FVector::Dist(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation()) > TargetingRange) SetCurrentTarget(nullptr);
+	//if(!IsValidScreenPosition(CurrentTarget->GetScreenPosition()))SetCurrentTarget(nullptr);
 }
 
