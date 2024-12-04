@@ -33,6 +33,12 @@ void UDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	const UVectorPayload* payload = Cast<UVectorPayload>(TriggerEventData->OptionalObject);
+
+	if (payload->VectorData.Length() == 0)
+	{
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		return;
+	}
 	Dash(payload->VectorData);
 
 	//ApplyCooldown(Handle, ActorInfo, ActivationInfo);
