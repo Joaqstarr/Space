@@ -62,7 +62,7 @@ void UGunComponent::Fire(ATargetable* lockedOnTarget)
 	{
 		asProjectile->SetTarget(lockedOnTarget);
 
-		UE_LOG(LogTemp, Display, TEXT("fire"));
+		//UE_LOG(LogTemp, Display, TEXT("fire"));
 
 		if(AbilitySystemComponent)
 		{

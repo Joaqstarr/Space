@@ -51,7 +51,7 @@ public:
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetAutoLookAtTarget(FVector targ){TargetLookLocation = targ; IsRotatingToLookAtTarget = true;}
+	void SetAutoLookAtTarget(USceneComponent* targ){TargetLookLocation = targ; IsRotatingToLookAtTarget = true;}
 protected:
 	UFUNCTION(BlueprintCallable)
 	void TryDash(FVector inputDirection);
@@ -81,7 +81,8 @@ private:
 	void RotateToFaceLocationPhysics(FVector targetLocation, float torqueStrength, float deltaTime);
 
 private:
-	FVector TargetLookLocation;
+	UPROPERTY()
+	USceneComponent* TargetLookLocation;
 	bool IsRotatingToLookAtTarget {false};
 
 };

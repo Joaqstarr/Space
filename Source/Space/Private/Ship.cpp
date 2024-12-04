@@ -61,7 +61,8 @@ void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	RotateToFaceLocationPhysics(TargetLookLocation, 20, DeltaTime/GetWorld()->GetWorldSettings()->TimeDilation);
+	if(TargetLookLocation)
+		RotateToFaceLocationPhysics(TargetLookLocation->GetComponentLocation(), 20, DeltaTime/GetWorld()->GetWorldSettings()->TimeDilation);
 }
 
 // Called to bind functionality to input
@@ -222,7 +223,7 @@ void AShip::RotateToFaceLocationPhysics(FVector targetLocation, float torqueStre
 	FVector CrossProduct = FVector::CrossProduct(ForwardVector, TargetDirection);
 	float DotProduct = FVector::DotProduct(ForwardVector, TargetDirection);
 	float Angle = FMath::Acos(FMath::Clamp(DotProduct, -1.0f, 1.0f));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::Printf(TEXT("Dot: %f"), DotProduct));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::Printf(TEXT("Dot: %f"), DotProduct));
 
 
 	// Convert the angle to torque
@@ -236,6 +237,7 @@ void AShip::RotateToFaceLocationPhysics(FVector targetLocation, float torqueStre
 		if(DotProduct >= 0.97f)
 		{
 			rootComponent->SetPhysicsAngularVelocityInRadians(FVector::Zero());
+			TargetLookLocation = nullptr;
 			IsRotatingToLookAtTarget = false;
 		}else
 		{

@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Actors/Targetable.h"
 #include "AttributeSets/DashSet.h"
+#include "Components/ShipParts/LookAtComponent.h"
 #include "Player/PlayerShip.h"
 #include "Utility/VectorPayload.h"
 
@@ -52,7 +53,8 @@ void UDashAbility::Dash(const FVector& inputDir)
 
 		UpdateDirectionAndStrengthForTarget(transformedDir, strength);
 		
-		root->AddImpulse(transformedDir * strength, NAME_None, true);
+		root->SetWorldLocation(root->GetComponentLocation() + transformedDir * strength, true, nullptr, ETeleportType::TeleportPhysics);
+		//root->AddImpulse(transformedDir * strength, NAME_None, true);
 	}
 }
 
@@ -65,6 +67,11 @@ void UDashAbility::UpdateDirectionAndStrengthForTarget(FVector& dir, float& stre
 	ATargetable* target = asPlayer->GetCurrentTarget();
 //todo dist check
 	if(!target)return;
+	
+	float distToTarget = FVector::Distance(target->GetActorLocation(), asPlayer->GetActorLocation());
+		
+	if(distToTarget > strength * 1.4f)return;
+	
 	FVector dirToTarget {(target->GetActorLocation() - asPlayer->GetActorLocation()).GetSafeNormal()};
 	float dot = dir.Dot(dirToTarget);
 
@@ -72,12 +79,15 @@ void UDashAbility::UpdateDirectionAndStrengthForTarget(FVector& dir, float& stre
 	if(dot <= 0.5f)return;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::Printf(TEXT("Dot: %f"), dot));
 
-	dir = dirToTarget;
 
-	strength = FVector::Distance(target->GetActorLocation(), asPlayer->GetActorLocation())/0.7f;
 	
-	asPlayer->SetAutoLookAtTarget(target->GetActorLocation());
 
-	//GetWorld()->GetWorldSettings()->SetTimeDilation(0.2f);
+	
+	//FVector aheadPos = ULookAtComponent::LookAheadByVelocity(target->GetActorLocation(), target->GetRootComponent()->GetComponentVelocity(), asPlayer->GetActorLocation(), strength);
+	dir = dirToTarget; //(aheadPos - asPlayer->GetActorLocation()).GetSafeNormal();
+	strength = distToTarget -100;
+
+	
+	asPlayer->SetAutoLookAtTarget(target->GetRootComponent());
 }
 

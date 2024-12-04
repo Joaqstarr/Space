@@ -18,6 +18,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateLookPosition(const FVector& newTargetPos, const FVector& targVelocity, float bulletSpeed);
+
+	static FVector LookAheadByVelocity(const FVector& newTargetPos, const FVector& targVelocity, const FVector& currentLocation, float speed);
 protected:
 	// Called when the game starts
 	void SmoothRotateTowardsTarget(const FVector& target, const float DeltaTime);
