@@ -21,4 +21,6 @@ public:
 protected:
 	UFUNCTION(BlueprintCallable)
 	void Dash(const FVector& inputDir);
+private:
+	void UpdateDirectionAndStrengthForTarget(FVector& dir, float& strength);
 };

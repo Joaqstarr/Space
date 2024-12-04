@@ -20,18 +20,21 @@ class UTargetingHandlerComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UTargetingHandlerComponent();
-	ATargetable* GetBestTarget();
+	
 
 	UFUNCTION(BlueprintCallable)
 	bool UpdateTarget();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<ATargetable> CurrentTarget = nullptr;
+	UFUNCTION(BlueprintCallable)
+	ATargetable* GetCurrentTarget(){return CurrentTarget;};
 
 	UPROPERTY(BlueprintAssignable,Category=Targeting)
 	FOnTargetChangedSignature OnTargetChanged;
 
 protected:
+	ATargetable* CalculateBestTarget();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<ATargetable> CurrentTarget = nullptr;
 	// Called when the game starts
 	virtual void BeginPlay() override;
 

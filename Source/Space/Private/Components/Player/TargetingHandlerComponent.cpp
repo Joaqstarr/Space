@@ -15,7 +15,7 @@ UTargetingHandlerComponent::UTargetingHandlerComponent()
 
 }
 
-ATargetable* UTargetingHandlerComponent::GetBestTarget()
+ATargetable* UTargetingHandlerComponent::CalculateBestTarget()
 {
 	ATargetable* closest = nullptr;
 	float closestDist {10000};
@@ -45,7 +45,7 @@ ATargetable* UTargetingHandlerComponent::GetBestTarget()
 
 bool UTargetingHandlerComponent::UpdateTarget()
 {
-	ATargetable* best = GetBestTarget();
+	ATargetable* best = CalculateBestTarget();
 
 	SetCurrentTarget(best);
 	return CurrentTarget != nullptr;

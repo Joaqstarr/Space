@@ -49,6 +49,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetAutoLookAtTarget(FVector targ){TargetLookLocation = targ; IsRotatingToLookAtTarget = true;}
 protected:
 	UFUNCTION(BlueprintCallable)
 	void TryDash(FVector inputDirection);
@@ -75,5 +78,10 @@ private:
 	float ApplyBrakes(FVector movementDir) const;
 	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
 	void ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const;
+	void RotateToFaceLocationPhysics(FVector targetLocation, float torqueStrength, float deltaTime);
+
+private:
+	FVector TargetLookLocation;
+	bool IsRotatingToLookAtTarget {false};
 
 };

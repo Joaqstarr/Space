@@ -46,7 +46,7 @@ AShip::AShip() : Super()
 void AShip::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AbilitySystemComponent)
+	if (AbilitySystemComponent && HasAuthority())
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(GetController(), this);
 	}
@@ -60,6 +60,8 @@ void AShip::BeginPlay()
 void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	RotateToFaceLocationPhysics(TargetLookLocation, 20, DeltaTime/GetWorld()->GetWorldSettings()->TimeDilation);
 }
 
 // Called to bind functionality to input
@@ -71,14 +73,15 @@ void AShip::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AShip::AddRoll(float rollAmount)
 {
+	if(IsRotatingToLookAtTarget)return;
 	AddTorqueControlAroundAxis(rollAmount, FVector(1,0, 0), ShipStats->RollSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
 }
 
 void AShip::AddPitch(float pitchAmount)
 {
+	if(IsRotatingToLookAtTarget)return;
 	AddTorqueControlAroundAxis(-pitchAmount, FVector(0,1, 0), ShipStats->PitchSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
-
 }
 
 //returns speed lost
@@ -150,6 +153,7 @@ void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float
 
 void AShip::AddYaw(float yawAmount)
 {
+	if(IsRotatingToLookAtTarget)return;
 	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 }
 
@@ -192,4 +196,50 @@ void AShip::TryDash(FVector inputDirection)
 	
 
 	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
+}
+
+void AShip::RotateToFaceLocationPhysics(FVector targetLocation, float torqueStrength, float deltaTime)
+{
+	if(!IsRotatingToLookAtTarget)return;
+	if (!GetRootComponent() || !GetRootComponent()->IsSimulatingPhysics())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Root Component is not simulating physics!"));
+		return;
+	}
+
+	// Get current location and forward vector
+	FVector CurrentLocation = GetActorLocation();
+	FVector ForwardVector = GetActorForwardVector();
+
+	// Calculate the target direction
+	FVector TargetDirection = (targetLocation - CurrentLocation).GetSafeNormal();
+	if (TargetDirection.IsNearlyZero())
+	{
+		return; // Avoid invalid direction
+	}
+
+	// Calculate the rotation needed to align forward vector with the target direction
+	FVector CrossProduct = FVector::CrossProduct(ForwardVector, TargetDirection);
+	float DotProduct = FVector::DotProduct(ForwardVector, TargetDirection);
+	float Angle = FMath::Acos(FMath::Clamp(DotProduct, -1.0f, 1.0f));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::Printf(TEXT("Dot: %f"), DotProduct));
+
+
+	// Convert the angle to torque
+	//FVector Torque = CrossProduct * (Angle / deltaTime) * torqueStrength;
+	FVector Torque = CrossProduct * (Angle * torqueStrength);
+
+	// Apply the torque
+	UPrimitiveComponent* rootComponent = Cast<UPrimitiveComponent>(GetRootComponent());
+	if (rootComponent)
+	{
+		if(DotProduct >= 0.97f)
+		{
+			rootComponent->SetPhysicsAngularVelocityInRadians(FVector::Zero());
+			IsRotatingToLookAtTarget = false;
+		}else
+		{
+			rootComponent->AddTorqueInRadians(Torque, NAME_None, true);
+		}
+	}
 }

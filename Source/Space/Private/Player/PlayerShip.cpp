@@ -34,6 +34,11 @@ FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
 	return mousePosNorm;
 }
 
+ATargetable* APlayerShip::GetCurrentTarget()
+{
+	if(!TargetingManager)return nullptr;
+	return TargetingManager->GetCurrentTarget();
+}
 
 
 void APlayerShip::BeginPlay()

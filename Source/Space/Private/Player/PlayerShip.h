@@ -23,6 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetMousePos(bool affectedByDeadzone) const;
 
+	//returns nullptr if no target
+	ATargetable* GetCurrentTarget();
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintCallable)
