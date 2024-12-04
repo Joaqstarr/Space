@@ -7,6 +7,7 @@
 #include "Actors/Targetable.h"
 #include "AttributeSets/DashSet.h"
 #include "Components/ShipParts/LookAtComponent.h"
+#include "GameplayEffects/CooldownEffect.h"
 #include "Player/PlayerShip.h"
 #include "Utility/VectorPayload.h"
 
@@ -23,6 +24,7 @@ UDashAbility::UDashAbility()
 	AbilityTriggers.Add(triggerEvent);
 
 	
+	CooldownGameplayEffectClass = UCooldownEffect::StaticClass();
 }
 
 void UDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -32,6 +34,25 @@ void UDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	const UVectorPayload* payload = Cast<UVectorPayload>(TriggerEventData->OptionalObject);
 	Dash(payload->VectorData);
+
+	//ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+	//CommitAbilityCooldown(Handle, ActorInfo, ActivationInfo, false, nullptr);
+	CommitAbility(Handle, ActorInfo, ActivationInfo, nullptr);
+	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+}
+
+const FGameplayTagContainer* UDashAbility::GetCooldownTags() const
+{
+	
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);
+	MutableTags->Reset(); // MutableTags writes to the TempCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
+	const FGameplayTagContainer* ParentTags = Super::GetCooldownTags();
+	if (ParentTags)
+	{
+		MutableTags->AppendTags(*ParentTags);
+	}
+	MutableTags->AppendTags(CooldownTags);
+	return MutableTags;
 }
 
 void UDashAbility::Dash(const FVector& inputDir)
@@ -90,4 +111,19 @@ void UDashAbility::UpdateDirectionAndStrengthForTarget(FVector& dir, float& stre
 	
 	asPlayer->SetAutoLookAtTarget(target->GetRootComponent());
 }
+
+void UDashAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "Cooldown applied");
+	if (CooldownGE)
+	{
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effects.Cooldown")), CooldownDuration.GetValueAtLevel(GetAbilityLevel()));
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+	}
+}
+
 

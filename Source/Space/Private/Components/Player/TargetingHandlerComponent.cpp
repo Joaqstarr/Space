@@ -98,16 +98,21 @@ void UTargetingHandlerComponent::FindTargetsInRange()
 	if(GetWorld()->OverlapMultiByChannel(overlapResults, ownerLocation, FQuat::Identity, ECC_GameTraceChannel1, sphere, params))
 	{
 		//GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Green, FString::Printf(TEXT("result count: %d"), overlapResults.Num()));
-		for(ATargetable* target : PotentialTargets)
+
+		for(int i = 0; i < PotentialTargets.Num(); i++)
 		{
+			ATargetable* target = PotentialTargets[i];
 			if(target && !overlapResults.ContainsByPredicate([&](const FOverlapResult& res)
 			{
 				return res.GetComponent() == Cast<UPrimitiveComponent>(target->CollisionSphere);
 			}))
 			{
 				if(target != nullptr)
+				{
 					target->ExitedRange();
-				PotentialTargets.Remove(target);
+				}
+				PotentialTargets.RemoveAt(i);
+				i--;
 			}
 		}
 		
