@@ -6,6 +6,7 @@
 #include "../Ship.h"
 #include "PlayerShip.generated.h"
 
+class ASword;
 class UGameplayAbility;
 class UPlayerShipAbilitySystemComponent;
 class ATargetable;
@@ -25,6 +26,7 @@ public:
 
 	//returns nullptr if no target
 	ATargetable* GetCurrentTarget();
+
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintCallable)
@@ -38,6 +40,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> TargetLockIndicator;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Weapons)
+	TSubclassOf<ASword> SwordClass;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<ASword> SwordActor;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};
@@ -48,5 +56,7 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category=Widgets)
 	TObjectPtr<UUserWidget> TargetLockWidget;
-
+private:
+	void SetupSwordActor();
+ 
 };

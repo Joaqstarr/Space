@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Weapons/Sword.h"
 
 APlayerShip::APlayerShip() : AShip()
 {
@@ -41,13 +42,22 @@ ATargetable* APlayerShip::GetCurrentTarget()
 }
 
 
+void APlayerShip::SetupSwordActor()
+{
+	if(SwordClass)
+	{
+		SwordActor = GetWorld()->SpawnActor<ASword>(SwordClass);
+		SwordActor->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WingBladeSocket"));
+	}
+}
+
 void APlayerShip::BeginPlay()
 {
 	Super::BeginPlay();
 	TargetLockIndicator->SetWidget(TargetLockWidget);
 
 
-
+	SetupSwordActor();
 }
 
 FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
