@@ -16,9 +16,9 @@ void USwordSwingAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	UAnimInstance* animInstance = ActorInfo->GetAnimInstance();
 	if(animInstance && SwordSwingMontage)
 	{
-		FAlphaBlendArgs blendArgs(0.2f);
-		
-		animInstance->Montage_PlayWithBlendIn(SwordSwingMontage, blendArgs, 1, EMontagePlayReturnType::Duration, true);
+		FAlphaBlendArgs blendArgs(0.01f);
+		animInstance->Montage_Play(SwordSwingMontage, 1, EMontagePlayReturnType::Duration);
+		//animInstance->Montage_PlayWithBlendIn(SwordSwingMontage, blendArgs, 1, EMontagePlayReturnType::Duration, true);
 		animInstance->OnMontageEnded.AddDynamic(this, &USwordSwingAbility::MontageEnded);
 		return;
 	}
