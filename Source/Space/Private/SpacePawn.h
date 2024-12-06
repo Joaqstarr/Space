@@ -19,6 +19,7 @@ public:
 	ASpacePawn();
 	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void PossessedBy(AController* NewController) override;
 protected:
 	
 	/*

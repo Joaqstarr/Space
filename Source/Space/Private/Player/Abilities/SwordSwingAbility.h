@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "SwordSwingAbility.generated.h"
 
+class APlayerShip;
 class UAnimMontage;
 /**
  * 
@@ -26,6 +27,8 @@ protected:
 private:
 	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	void AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip);
 
 
 };

@@ -34,10 +34,10 @@ AShip::AShip() : Super()
 
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("HealthComponent"));
+	DashAttributeSet = CreateDefaultSubobject<UDashSet>(TEXT("DashSet"));
 
-	if (AbilitySystemComponent)
+	if (AbilitySystemComponent && DashAttributeSet)
 	{
-		DashAttributeSet = CreateDefaultSubobject<UDashSet>(TEXT("DashSet"));
 		AbilitySystemComponent->AddAttributeSetSubobject(DashAttributeSet);
 	}
 }
@@ -46,14 +46,8 @@ AShip::AShip() : Super()
 void AShip::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AbilitySystemComponent && HasAuthority())
-	{
-		AbilitySystemComponent->InitAbilityActorInfo(GetController(), this);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AbilitySystemComponent is NULL in BeginPlay."));
-	}
+
+
 }
 
 // Called every frame

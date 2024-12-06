@@ -6,6 +6,7 @@
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Weapons/Sword.h"
+#include "MotionWarping/Public/MotionWarpingComponent.h"
 
 APlayerShip::APlayerShip() : AShip()
 {
@@ -19,7 +20,8 @@ APlayerShip::APlayerShip() : AShip()
 	TargetLockIndicator->SetDrawSize(FVector2D(30,30));
 	TargetLockIndicator->SetupAttachment(ShipMeshComponent);
 
-
+	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(FName("MotionWarping"));
+	bAlwaysRelevant = false;
 }
 
 FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const

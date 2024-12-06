@@ -10,6 +10,8 @@ ASpacePawn::ASpacePawn()
 	AbilitySystemComponent = CreateDefaultSubobject<UShipAbilitySystemComponent>( FName("AbilitySystemComponent"));
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
+	bReplicates = true;
+	bAlwaysRelevant = true;
 }
 
 UAbilitySystemComponent* ASpacePawn::GetAbilitySystemComponent() const
@@ -17,17 +19,30 @@ UAbilitySystemComponent* ASpacePawn::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+void ASpacePawn::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+}
+
 // Called when the game starts or when spawned
 void ASpacePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+	if (AbilitySystemComponent && HasAuthority())
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(GetController(), this);
+	}
+	
 	InitDefaultAttributes();
 	GiveDefaultAbilities();
-
 }
 
 void ASpacePawn::InitDefaultAttributes() const
 {
+	if(!HasAuthority())return;
 	if(!AbilitySystemComponent || !DefaultAttributeEffect)return;
 
 	FGameplayEffectContextHandle effectHandle = AbilitySystemComponent->MakeEffectContext();
@@ -43,8 +58,8 @@ void ASpacePawn::InitDefaultAttributes() const
 
 void ASpacePawn::GiveDefaultAbilities()
 {
-	check(AbilitySystemComponent);
 	if(!HasAuthority()) return;
+	check(AbilitySystemComponent);
 	
 	for(TSubclassOf<UGameplayAbility> abilityClass : DefaultAbilities)
 	{

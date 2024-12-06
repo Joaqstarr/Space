@@ -3,7 +3,10 @@
 
 #include "Player/Abilities/SwordSwingAbility.h"
 
-USwordSwingAbility::USwordSwingAbility()
+#include "MotionWarpingComponent.h"
+#include "Player/PlayerShip.h"
+
+USwordSwingAbility::USwordSwingAbility()	
 {
 }
 
@@ -13,6 +16,10 @@ void USwordSwingAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+
+	
+
+	
 	UAnimInstance* animInstance = ActorInfo->GetAnimInstance();
 	if(animInstance && SwordSwingMontage)
 	{
@@ -35,4 +42,15 @@ void USwordSwingAbility::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	CurrentActorInfo->GetAnimInstance()->OnMontageEnded.Remove(this, FName("MontageEnded"));
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void USwordSwingAbility::AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip)
+{
+	if(!playerShip)return;
+	
+	UMotionWarpingComponent* motionWarpingComponent = playerShip->GetMotionWarping();
+	
+	if(!motionWarpingComponent || !warpActor)return;
+
+	motionWarpingComponent->AddOrUpdateWarpTargetFromLocation(warpTargetName, warpActor->GetActorLocation());
 }

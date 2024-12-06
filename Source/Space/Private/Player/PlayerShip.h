@@ -14,6 +14,7 @@ class UWidgetComponent;
 class UAIPerceptionStimuliSourceComponent;
 class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
+class UMotionWarpingComponent;
 
 UCLASS()
 class APlayerShip : public AShip
@@ -27,6 +28,7 @@ public:
 	//returns nullptr if no target
 	ATargetable* GetCurrentTarget();
 
+	UMotionWarpingComponent* GetMotionWarping(){return MotionWarpingComponent;};
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintCallable)
@@ -46,6 +48,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<ASword> SwordActor;
+
+	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};

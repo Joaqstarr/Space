@@ -7,8 +7,10 @@
 
 void UDashSet::OnRep_DashStrength(const FGameplayAttributeData& oldDashStrength)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UDashSet, DashStrength, oldDashStrength);
 
+	//GAMEPLAYATTRIBUTE_REPNOTIFY(UDashSet, DashStrength, oldDashStrength);
+	static FProperty* ThisProperty = FindFieldChecked<FProperty>(UDashSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UDashSet, DashStrength));
+	GetOwningAbilitySystemComponentChecked()->SetBaseAttributeValueFromReplication(FGameplayAttribute(ThisProperty), DashStrength, oldDashStrength);
 }
 
 UDashSet::UDashSet()

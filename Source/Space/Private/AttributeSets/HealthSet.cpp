@@ -46,6 +46,7 @@ void UHealthSet::OnRep_Health(const FGameplayAttributeData& oldHealth)
 
 void UHealthSet::OnRep_MaxHealth(const FGameplayAttributeData& oldMaxHealth)
 {
+
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthSet, MaxHealth, oldMaxHealth);
 	
 }

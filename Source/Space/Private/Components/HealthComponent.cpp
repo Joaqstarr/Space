@@ -22,7 +22,7 @@ void UHealthComponent::BeginPlay()
 	{
 		ASC = asASC->GetAbilitySystemComponent();
 	}
-	if(ASC)
+	if(ASC && GetOwner()->HasAuthority())
 	{
 		HealthSet = NewObject<UHealthSet>();
 		ASC->AddAttributeSetSubobject(HealthSet);
