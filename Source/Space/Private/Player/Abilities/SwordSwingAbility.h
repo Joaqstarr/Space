@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "SwordSwingAbility.generated.h"
 
+class ACapsuleTraceTargetActor;
 class APlayerShip;
 class UAnimMontage;
 /**
@@ -24,11 +25,16 @@ public:
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UAnimMontage> SwordSwingMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ACapsuleTraceTargetActor> CapsuleTargetClass;
+	
+	UFUNCTION(BlueprintCallable)
+	void AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip);
 private:
 	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-	void AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip);
-
+	UFUNCTION()
+	void TargetDataReceived( const FGameplayAbilityTargetDataHandle& data);
 
 };

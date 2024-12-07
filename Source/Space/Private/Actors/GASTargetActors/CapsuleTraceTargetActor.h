@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbilityTargetActor_Trace.h"
+#include "Abilities/GameplayAbilityTargetActor.h"
 #include "CapsuleTraceTargetActor.generated.h"
 
+class UCapsuleComponent;
 /**
  * 
  */
 UCLASS()
-class ACapsuleTraceTargetActor : public AGameplayAbilityTargetActor_Trace
+class ACapsuleTraceTargetActor : public AGameplayAbilityTargetActor
 {
 	GENERATED_BODY()
 public:
@@ -18,12 +19,14 @@ public:
 	virtual void StartTargeting(UGameplayAbility* ability) override;
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CapsuleRadius = 50;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CapsuleHeight= 100;
 
-	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
-private:
-	FCollisionShape CollisionShape;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCapsuleComponent> TargetCapsule;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USceneComponent> RootSceneComponent;
+protected:
+	virtual void ConfirmTargetingAndContinue() override;
+	void FindTargetsInCapsule(TArray<FHitResult>& outHits) const;
+	FGameplayAbilityTargetDataHandle MakeTargetData(const TArray<AActor*>& targetActors) const;
+
 };

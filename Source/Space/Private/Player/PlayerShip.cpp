@@ -21,6 +21,8 @@ APlayerShip::APlayerShip() : AShip()
 	TargetLockIndicator->SetupAttachment(ShipMeshComponent);
 
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(FName("MotionWarping"));
+	MotionWarpingComponent->InitializeComponent();
+	
 	bAlwaysRelevant = false;
 }
 
@@ -50,6 +52,17 @@ void APlayerShip::SetupSwordActor()
 	{
 		SwordActor = GetWorld()->SpawnActor<ASword>(SwordClass);
 		SwordActor->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WingBladeSocket"));
+	}
+}
+
+void APlayerShip::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(GEngine && MotionWarpingComponent)
+	{
+		const FMotionWarpingTarget* target = MotionWarpingComponent->FindWarpTarget(TEXT("SwordTarget"));
+		if(target)
+			GEngine->AddOnScreenDebugMessage(66, 2, FColor::Red, target->Location.ToString());
 	}
 }
 

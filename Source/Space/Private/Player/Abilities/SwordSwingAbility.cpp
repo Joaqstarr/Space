@@ -2,8 +2,9 @@
 
 
 #include "Player/Abilities/SwordSwingAbility.h"
-
+#include "Actors/GASTargetActors/CapsuleTraceTargetActor.h"
 #include "MotionWarpingComponent.h"
+#include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "Player/PlayerShip.h"
 
 USwordSwingAbility::USwordSwingAbility()	
@@ -16,20 +17,23 @@ void USwordSwingAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-
-	
-
-	
-	UAnimInstance* animInstance = ActorInfo->GetAnimInstance();
-	if(animInstance && SwordSwingMontage)
+	return;
+	/*
+	UAbilityTask_WaitTargetData* waitForTarget = UAbilityTask_WaitTargetData::WaitTargetData(this, FName(TEXT("WaitTargetData")), EGameplayTargetingConfirmation::UserConfirmed, CapsuleTargetClass);
+	if(waitForTarget)
 	{
-		FAlphaBlendArgs blendArgs(0.01f);
-		animInstance->Montage_Play(SwordSwingMontage, 1, EMontagePlayReturnType::Duration);
-		//animInstance->Montage_PlayWithBlendIn(SwordSwingMontage, blendArgs, 1, EMontagePlayReturnType::Duration, true);
-		animInstance->OnMontageEnded.AddDynamic(this, &USwordSwingAbility::MontageEnded);
-		return;
+		waitForTarget->ValidData.AddDynamic(this, &USwordSwingAbility::TargetDataReceived);	
+		waitForTarget->Cancelled.AddDynamic(this, &USwordSwingAbility::TargetDataReceived);
+		AGameplayAbilityTargetActor* spawnedActor;
+		if(waitForTarget->BeginSpawningActor(this, CapsuleTargetClass, spawnedActor))
+		{
+			waitForTarget->FinishSpawningActor(this, spawnedActor);
+			waitForTarget->ReadyForActivation();
+			return;
+		}
+
 	}
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);*/
 }
 
 void USwordSwingAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -47,10 +51,30 @@ void USwordSwingAbility::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 void USwordSwingAbility::AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip)
 {
 	if(!playerShip)return;
-	
+
 	UMotionWarpingComponent* motionWarpingComponent = playerShip->GetMotionWarping();
-	
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("WARPING COMPONENT"));
+
 	if(!motionWarpingComponent || !warpActor)return;
 
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, warpActor->GetActorLocation().ToString());
+
 	motionWarpingComponent->AddOrUpdateWarpTargetFromLocation(warpTargetName, warpActor->GetActorLocation());
+}
+
+void USwordSwingAbility::TargetDataReceived(const FGameplayAbilityTargetDataHandle& data)
+{
+	CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo);
+	UAnimInstance* animInstance = CurrentActorInfo->GetAnimInstance();
+	if(animInstance && SwordSwingMontage)
+	{
+		FAlphaBlendArgs blendArgs(0.01f);
+		animInstance->Montage_Play(SwordSwingMontage, 1, EMontagePlayReturnType::Duration);
+		//animInstance->Montage_PlayWithBlendIn(SwordSwingMontage, blendArgs, 1, EMontagePlayReturnType::Duration, true);
+		animInstance->OnMontageEnded.AddDynamic(this, &USwordSwingAbility::MontageEnded);
+		return;
+	}
+
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+
 }

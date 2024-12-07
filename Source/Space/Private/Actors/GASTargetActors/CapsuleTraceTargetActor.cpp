@@ -2,44 +2,114 @@
 
 
 #include "Actors/GASTargetActors/CapsuleTraceTargetActor.h"
+
+#include "Components/CapsuleComponent.h"
 #include "GameplayAbilities/Public/Abilities/GameplayAbilityTargetTypes.h"
 
 ACapsuleTraceTargetActor::ACapsuleTraceTargetActor()
 {
-	FGameplayAbilityTargetingLocationInfo info;
-	info.LocationType = EGameplayAbilityTargetingLocationType::ActorTransform;
-	info.SourceActor = GetOwner();
-	StartLocation = info;
-
+	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(RootSceneComponent);
 	
+	TargetCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("TargetCapsule"));
+	TargetCapsule->SetupAttachment(GetRootComponent());
+	TargetCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TargetCapsule->SetCollisionObjectType(ECC_WorldDynamic);
+	TargetCapsule->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//TargetCapsule->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+	TargetCapsule->InitCapsuleSize(100.0f, 200.0f);
 }
 
 void ACapsuleTraceTargetActor::StartTargeting(UGameplayAbility* ability)
 {
-	CollisionShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHeight * 0.5f);
 	Super::StartTargeting(ability);
+	
+	if (SourceActor)
+	{
+		FVector forwardVector = SourceActor->GetActorForwardVector();
+		FVector startLocation = SourceActor->GetActorLocation() + forwardVector * 300.0f; // Adjust distance as needed
+		TargetCapsule->SetWorldLocation(startLocation);
+		TargetCapsule->SetWorldRotation(forwardVector.Rotation());
+	}
 }
 
-FHitResult ACapsuleTraceTargetActor::PerformTrace(AActor* InSourceActor)
+void ACapsuleTraceTargetActor::ConfirmTargetingAndContinue()
 {
-	bool bTraceComplex = false;
+	TArray<FHitResult> hitResults;
+	FindTargetsInCapsule(hitResults);
 
-	FCollisionQueryParams params(SCENE_QUERY_STAT(ACapsuleTraceTargetActor), bTraceComplex);
-	params.bReturnPhysicalMaterial = true;
-	params.AddIgnoredActor(InSourceActor);
-
-	FVector traceStart = InSourceActor->GetActorLocation();
-	FVector traceEnd;
-	AimWithPlayerController(InSourceActor, params, traceStart, traceEnd);
-
-	FHitResult hitResult;
-	//LineTraceWithFilter(hitResult, InSourceActor->GetWorld(), Filter, traceStart, traceEnd, TraceProfile.Name, params);
-	SweepWithFilter(hitResult, InSourceActor->GetWorld(), Filter, traceStart, traceEnd, InSourceActor->GetActorQuat(), CollisionShape, TraceProfile.Name, params);
-	if(!hitResult.bBlockingHit)
+	TArray<AActor*> targetActors;
+	for (const FHitResult& hit : hitResults)
 	{
-		hitResult.Location = traceEnd;
+		AActor* hitActor = hit.GetActor();
+		if (hitActor && !targetActors.Contains(hitActor))
+		{
+			targetActors.Add(hitActor);
+		}
 	}
 
-	
-	return hitResult;
+	// Create the target data
+	if (targetActors.Num() > 0)
+	{
+		FGameplayAbilityTargetDataHandle targetDataHandle = MakeTargetData(targetActors);
+		TargetDataReadyDelegate.Broadcast(targetDataHandle);
+	}
+	else
+	{
+		TargetDataReadyDelegate.Broadcast(FGameplayAbilityTargetDataHandle());
+	}
+
+	Destroy();
+}
+
+void ACapsuleTraceTargetActor::FindTargetsInCapsule(TArray<FHitResult>& outHits) const
+{
+	FVector capsuleLocation = TargetCapsule->GetComponentLocation();
+	FQuat capsuleRotation = TargetCapsule->GetComponentQuat();
+	float capsuleRadius = TargetCapsule->GetScaledCapsuleRadius();
+	float capsuleHalfHeight = TargetCapsule->GetScaledCapsuleHalfHeight();
+
+	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(Targeting), false, SourceActor);
+	GetWorld()->SweepMultiByChannel(
+		outHits,
+		capsuleLocation,
+		capsuleLocation,
+		capsuleRotation,
+		ECC_GameTraceChannel1,
+		FCollisionShape::MakeCapsule(capsuleRadius, capsuleHalfHeight),
+		QueryParams
+	);
+
+	if(bDebug)
+	{
+		GEngine->AddOnScreenDebugMessage(5, 4.f, FColor::Emerald, FString::Printf(TEXT("Num hits: %d"), outHits.Num()));
+		// Optionally draw debug
+		DrawDebugCapsule(
+			 GetWorld(),
+			capsuleLocation,
+			capsuleHalfHeight,
+			capsuleRadius,
+			capsuleRotation,
+			FColor::Blue,
+			false,
+			2.0f
+		);
+	}
+}
+
+FGameplayAbilityTargetDataHandle ACapsuleTraceTargetActor::MakeTargetData(const TArray<AActor*>& targetActors) const
+{
+	FGameplayAbilityTargetDataHandle targetDataHandle;
+
+	for (AActor* targetActor : targetActors)
+	{
+		if (targetActor)
+		{
+			TSharedPtr<FGameplayAbilityTargetData_ActorArray> targetData = MakeShared<FGameplayAbilityTargetData_ActorArray>();
+			targetData->TargetActorArray.Add(targetActor);
+			targetDataHandle.Data.Add(targetData);
+		}
+	}
+
+	return targetDataHandle;
 }
