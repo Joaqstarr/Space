@@ -14,7 +14,7 @@ class UWidgetComponent;
 class UAIPerceptionStimuliSourceComponent;
 class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
-class UMotionWarpingComponent;
+class UPawnMotionWarpingComponent;
 
 UCLASS()
 class APlayerShip : public AShip
@@ -28,7 +28,9 @@ public:
 	//returns nullptr if no target
 	ATargetable* GetCurrentTarget();
 
-	UMotionWarpingComponent* GetMotionWarping(){return MotionWarpingComponent;};
+	UPawnMotionWarpingComponent* GetMotionWarping();
+
+	
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
@@ -52,7 +54,7 @@ protected:
 
 	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
+	TObjectPtr<UPawnMotionWarpingComponent> PawnMotionWarpingComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MouseRadius{50};

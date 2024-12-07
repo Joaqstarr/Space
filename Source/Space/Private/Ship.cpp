@@ -60,22 +60,7 @@ void AShip::Tick(float DeltaTime)
 		RotateToFaceLocationPhysics(TargetLookLocation->GetComponentLocation(), 20, DeltaTime/GetWorld()->GetWorldSettings()->TimeDilation);
 	}
 
-	if (ShipMeshComponent && ShipMeshComponent->GetAnimInstance())
-	{
-		const FRootMotionMovementParams rootMotion = ShipMeshComponent->ConsumeRootMotion();
-		
-		if (rootMotion.GetRootMotionTransform().IsValid())
-		{
-			FVector rootMotionTranslation = rootMotion.GetRootMotionTransform().GetTranslation();
-			FRotator rootMotionRotation = rootMotion.GetRootMotionTransform().GetRotation().Rotator();
-
-			FVector worldAlignedTranslation = GetActorRotation().RotateVector(rootMotionTranslation);
-
-			// Apply root motion to the ship's position and rotation
-			AddActorWorldOffset(worldAlignedTranslation, true, nullptr,ETeleportType::TeleportPhysics);
-			AddActorWorldRotation(rootMotionRotation, true, nullptr,ETeleportType::TeleportPhysics);
-		}
-	}
+	
 }
 
 // Called to bind functionality to input

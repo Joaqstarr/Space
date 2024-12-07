@@ -5,6 +5,7 @@
 #include "Actors/GASTargetActors/CapsuleTraceTargetActor.h"
 #include "MotionWarpingComponent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+#include "Components/Player/PawnMotionWarpingComponent.h"
 #include "Player/PlayerShip.h"
 
 USwordSwingAbility::USwordSwingAbility()	
@@ -50,16 +51,17 @@ void USwordSwingAbility::MontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void USwordSwingAbility::AddMotionWarpingTarget(FName warpTargetName, AActor* warpActor, APlayerShip* playerShip)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("Add Motion Warping Target"));
 	if(!playerShip)return;
 
-	UMotionWarpingComponent* motionWarpingComponent = playerShip->GetMotionWarping();
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("WARPING COMPONENT"));
+	UPawnMotionWarpingComponent* motionWarpingComponent = playerShip->GetMotionWarping();
+	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("WARPING COMPONENT"));
 
-	if(!motionWarpingComponent || !warpActor)return;
+	if(!motionWarpingComponent)return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, warpActor->GetActorLocation().ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, warpActor->GetActorLocation().ToString());
 
-	motionWarpingComponent->AddOrUpdateWarpTargetFromLocation(warpTargetName, warpActor->GetActorLocation());
+	motionWarpingComponent->SetWarpTarget(warpActor);
 }
 
 void USwordSwingAbility::TargetDataReceived(const FGameplayAbilityTargetDataHandle& data)

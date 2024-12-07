@@ -3,10 +3,10 @@
 
 #include "Player/PlayerShip.h"
 #include "Components/WidgetComponent.h"
+#include "Components/Player/PawnMotionWarpingComponent.h"
 #include "Components/Player/TargetingHandlerComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Weapons/Sword.h"
-#include "MotionWarping/Public/MotionWarpingComponent.h"
 
 APlayerShip::APlayerShip() : AShip()
 {
@@ -20,8 +20,8 @@ APlayerShip::APlayerShip() : AShip()
 	TargetLockIndicator->SetDrawSize(FVector2D(30,30));
 	TargetLockIndicator->SetupAttachment(ShipMeshComponent);
 
-	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(FName("MotionWarping"));
-	MotionWarpingComponent->InitializeComponent();
+	PawnMotionWarpingComponent = CreateDefaultSubobject<UPawnMotionWarpingComponent>(FName("PawnMotionWarpingComponent"));
+	//MotionWarpingComponent->InitializeComponent();
 	
 	bAlwaysRelevant = false;
 }
@@ -45,6 +45,11 @@ ATargetable* APlayerShip::GetCurrentTarget()
 	return TargetingManager->GetCurrentTarget();
 }
 
+UPawnMotionWarpingComponent* APlayerShip::GetMotionWarping()
+{
+	return PawnMotionWarpingComponent;
+}
+
 
 void APlayerShip::SetupSwordActor()
 {
@@ -58,12 +63,14 @@ void APlayerShip::SetupSwordActor()
 void APlayerShip::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	/*
 	if(GEngine && MotionWarpingComponent)
 	{
-		const FMotionWarpingTarget* target = MotionWarpingComponent->FindWarpTarget(TEXT("SwordTarget"));
+
+		const AActor* target = MotionWarpingComponent->GetWarpTarget();
 		if(target)
-			GEngine->AddOnScreenDebugMessage(66, 2, FColor::Red, target->Location.ToString());
-	}
+			GEngine->AddOnScreenDebugMessage(66, 2, FColor::Red, target->GetActorLocation().ToString());
+	}*/
 }
 
 void APlayerShip::BeginPlay()

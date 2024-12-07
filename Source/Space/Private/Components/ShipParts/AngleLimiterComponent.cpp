@@ -14,6 +14,7 @@ void UAngleLimiterComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	TargetComponent = GetChildComponent(0);
+	
 }
 
 // Called every frame
