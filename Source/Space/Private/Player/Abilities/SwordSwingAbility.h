@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbility.h"
+#include "CooldownGameplayAbility.h"
 #include "SwordSwingAbility.generated.h"
 
 class ACapsuleTraceTargetActor;
@@ -13,7 +13,7 @@ class UAnimMontage;
  * 
  */
 UCLASS()
-class USwordSwingAbility : public UGameplayAbility
+class USwordSwingAbility : public UCooldownGameplayAbility
 {
 	GENERATED_BODY()
 public:
