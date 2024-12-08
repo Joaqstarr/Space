@@ -36,7 +36,6 @@ void UPawnMotionWarpingComponent::ApplyMotionWarping(const FTransform& currentRo
 void UPawnMotionWarpingComponent::SetWarpTarget(AActor* targetActor)
 {
 	WarpTargetActor = targetActor;
-	StartDirection = GetOwner()->GetActorRotation().Vector();
 
 }
 
@@ -104,12 +103,15 @@ void UPawnMotionWarpingComponent::TickComponent(float DeltaTime, enum ELevelTick
 			if(bIsWarping && WarpTargetActor != nullptr)
 			{
 				worldAlignedTranslation = CalculateWarpTransform(rootMotionTranslation, WarpTargetActor->GetActorLocation(), WarpInterp);
-				GetOwner()->SetActorRotation(CalculateWarpDirection(rootMotionRotation, WarpTargetActor->GetActorLocation(),WarpInterp), ETeleportType::TeleportPhysics);
+				FRotator calculatedWarpRotation = CalculateWarpDirection(rootMotionRotation, WarpTargetActor->GetActorLocation(),WarpInterp);
+
+
+				GetOwner()->SetActorRotation(calculatedWarpRotation, ETeleportType::TeleportPhysics);
 			}else
 			{
 				GetOwner()->AddActorWorldRotation(rootMotionRotation, true, nullptr,ETeleportType::TeleportPhysics);
+
 			}
-	
 			GetOwner()->AddActorWorldOffset(worldAlignedTranslation, true, nullptr,ETeleportType::TeleportPhysics);
 		}
 	}
@@ -141,20 +143,26 @@ FVector  UPawnMotionWarpingComponent::CalculateWarpTransform(const FVector& root
 
 FRotator UPawnMotionWarpingComponent::CalculateWarpDirection(const FRotator rootRotation,const FVector& targetWorldPosition, float interpVal) const
 {
-	if(!bWarpDirection)return rootRotation;
+	FRotator currentRotation = GetOwner()->GetActorRotation();
 
+	if(!bWarpDirection)return rootRotation + currentRotation;
+	
 	FVector currentWorldPosition = GetOwner()->GetActorLocation();
 	FVector directionToTarget = (targetWorldPosition - currentWorldPosition).GetSafeNormal();
-	FVector startDir = StartDirection;
+	FVector startDir = currentRotation.Vector();
 	
+
+	// Use FVector::Slerp for smooth direction adjustment
 	FVector transformedDir = FVector::SlerpVectorToDirection(startDir, directionToTarget, interpVal);
 
-	if(startDir.Dot(transformedDir) <= 0)
+	// Ensure direction adjustment avoids "flipping"
+	if (startDir.Dot(transformedDir) <= 0)
 	{
 		FVector cross = transformedDir.Cross(startDir);
 		FVector cross2 = FVector::CrossProduct(startDir, cross);
 		return cross2.Rotation();
 	}
+
 	return transformedDir.Rotation();
 }
 

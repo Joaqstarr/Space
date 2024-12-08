@@ -51,6 +51,4 @@ private:
 	bool bWarpDirection = false;
 	bool bPreserveDistance = false;
 
-	//for lerping direction
-	FVector StartDirection = FVector(0, 1, 0);
 };
