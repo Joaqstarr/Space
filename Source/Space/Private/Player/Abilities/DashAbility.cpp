@@ -63,10 +63,10 @@ void UDashAbility::Dash(const FVector& inputDir)
 			strength = dashSet->GetDashStrength();
 		}
 
-		UpdateDirectionAndStrengthForTarget(transformedDir, strength);
+		//UpdateDirectionAndStrengthForTarget(transformedDir, strength);
 		
-		root->SetWorldLocation(root->GetComponentLocation() + transformedDir * strength, true, nullptr, ETeleportType::TeleportPhysics);
-		//root->AddImpulse(transformedDir * strength, NAME_None, true);
+		//root->SetWorldLocation(root->GetComponentLocation() + transformedDir * strength, true, nullptr, ETeleportType::TeleportPhysics);
+		root->AddImpulse(transformedDir * strength, NAME_None, true);
 	}
 }
 
@@ -77,7 +77,6 @@ void UDashAbility::UpdateDirectionAndStrengthForTarget(FVector& dir, float& stre
 	if(!asPlayer)return;
 
 	ATargetable* target = asPlayer->GetCurrentTarget();
-//todo dist check
 	if(!target)return;
 	
 	float distToTarget = FVector::Distance(target->GetActorLocation(), asPlayer->GetActorLocation());
