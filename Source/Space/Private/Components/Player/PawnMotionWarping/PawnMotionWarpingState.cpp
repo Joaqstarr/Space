@@ -26,7 +26,7 @@ void UPawnMotionWarpingState::NotifyBegin(USkeletalMeshComponent* meshComp, UAni
 	
 	if(PawnMotionWarpingComponent != nullptr)
 	{
-		PawnMotionWarpingComponent->StartWarping(bPreserveDistance, bWarpDirection);
+		PawnMotionWarpingComponent->StartWarping(MotionWarpingParams);
 	}
 }
 

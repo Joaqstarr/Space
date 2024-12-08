@@ -6,9 +6,22 @@
 #include "Components/ActorComponent.h"
 #include "PawnMotionWarpingComponent.generated.h"
 
-/**
- * 
- */
+USTRUCT(Blueprintable)
+struct FMotionWarpingParams
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	/*Local space offset to place target in relation to source actor*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector WarpOffset;
+	/*If true will only adjust warp direction but use the original motion's distance.*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bPreserveDistance = false;
+	/*If true will also adjust direction towards target.*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bWarpDirection = false;
+};
+
 UCLASS()
 class UPawnMotionWarpingComponent : public UActorComponent
 {
@@ -31,7 +44,7 @@ public:
 	
 	void UpdateMotionWarping(float interp);
 
-	void StartWarping(bool preserveDistance, bool warpDirection);
+	void StartWarping(const FMotionWarpingParams& params);
 	void StopWarping(){bIsWarping = false;};
 protected:
 	virtual void BeginPlay() override;
@@ -50,5 +63,7 @@ private:
 
 	bool bWarpDirection = false;
 	bool bPreserveDistance = false;
+	FVector WarpOffset;
 
+	
 };

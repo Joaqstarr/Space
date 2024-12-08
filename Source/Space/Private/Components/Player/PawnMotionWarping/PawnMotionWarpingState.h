@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Components/Player/PawnMotionWarpingComponent.h"
 #include "PawnMotionWarpingState.generated.h"
 
 class UPawnMotionWarpingComponent;
@@ -20,13 +21,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EAlphaBlendOption AddTranslationEasingFunc;
 
-	/*If true will only adjust direction but not distance.*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bPreserveDistance;
 
-	/*If true will also adjust direction towards target.*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bWarpDirection;
+	FMotionWarpingParams MotionWarpingParams;
 private:
 	TWeakObjectPtr<UPawnMotionWarpingComponent> PawnMotionWarpingComponent;
 

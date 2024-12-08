@@ -67,11 +67,12 @@ void UPawnMotionWarpingComponent::UpdateMotionWarping(float interp)
 	//GEngine->AddOnScreenDebugMessage(63, 2, FColor::Red, FString::Printf(TEXT("Warping Interpolation: %f"), WarpInterp));
 }
 
-void UPawnMotionWarpingComponent::StartWarping(bool preserveDistance, bool warpDirection)
+void UPawnMotionWarpingComponent::StartWarping(const FMotionWarpingParams& params)
 {
 	bIsWarping = true;
-	this->bPreserveDistance = preserveDistance;
-	this->bWarpDirection = warpDirection;
+	bPreserveDistance = params.bPreserveDistance;
+	bWarpDirection = params.bWarpDirection;
+	WarpOffset = params.WarpOffset;
 }
 
 void UPawnMotionWarpingComponent::BeginPlay()
@@ -124,21 +125,18 @@ FVector  UPawnMotionWarpingComponent::CalculateWarpTransform(const FVector& root
 	interpVal = FMath::Clamp(interpVal, 0.0f, 1.0f);
 
 	
-	FVector currentWorldPosition = GetOwner()->GetActorLocation();
+	FVector currentWorldPosition = GetOwner()->GetActorLocation() + GetOwner()->GetActorRotation().RotateVector(WarpOffset);
 	FVector currentDirection = GetOwner()->GetActorRotation().Vector();
 	float distance = FVector::Dist(currentWorldPosition, targetWorldPosition);
 
-	// Compute the desired world position based on the root motion translation
-	FVector CurrentEndPosition = currentWorldPosition + currentDirection * rootMotionTranslation.Size();
-
 	// Calculate the direction to the target from the current position
-	FVector DirectionToTarget = (targetWorldPosition - currentWorldPosition).GetSafeNormal();
+	FVector directionToTarget = (targetWorldPosition - currentWorldPosition).GetSafeNormal();
 
 	// Scale the adjusted direction by the original translation magnitude or the distance lerped by current interpolation
 	float distanceScale = (bPreserveDistance)? rootMotionTranslation.Size() : distance * interpVal;
-	FVector AdjustedTranslation = DirectionToTarget * distanceScale;
+	FVector adjustedTranslation = directionToTarget * distanceScale;
 
-	return AdjustedTranslation;
+	return adjustedTranslation;
 }
 
 FRotator UPawnMotionWarpingComponent::CalculateWarpDirection(const FRotator rootRotation,const FVector& targetWorldPosition, float interpVal) const
@@ -154,14 +152,7 @@ FRotator UPawnMotionWarpingComponent::CalculateWarpDirection(const FRotator root
 
 	// Use FVector::Slerp for smooth direction adjustment
 	FVector transformedDir = FVector::SlerpVectorToDirection(startDir, directionToTarget, interpVal);
-
-	// Ensure direction adjustment avoids "flipping"
-	if (startDir.Dot(transformedDir) <= 0)
-	{
-		FVector cross = transformedDir.Cross(startDir);
-		FVector cross2 = FVector::CrossProduct(startDir, cross);
-		return cross2.Rotation();
-	}
+	
 
 	return transformedDir.Rotation();
 }
