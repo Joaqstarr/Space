@@ -10,7 +10,7 @@ UDamageEffect::UDamageEffect() : UGameplayEffect()
 	DurationPolicy = EGameplayEffectDurationType::Instant;
 
 	FGameplayModifierInfo modifierInfo;
-	modifierInfo.Attribute = UHealthSet::GetHealthAttribute();
+	modifierInfo.Attribute = UHealthSet::GetDamageAttribute();
 
 	FSetByCallerFloat setByCallerValue;
 	setByCallerValue.DataTag = FGameplayTag::RequestGameplayTag(FName("Effects.Damage"));

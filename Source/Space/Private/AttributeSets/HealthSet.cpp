@@ -14,17 +14,24 @@ UHealthSet::UHealthSet() : USpaceAttributeSet()
 void UHealthSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	Super::PreAttributeChange(Attribute, NewValue);
-
-	if(Attribute == GetHealthAttribute())
-	{
-		//GEngine->AddOnScreenDebugMessage(87, 5.0, FColor::Red, FString::Printf(TEXT("Health set to %f"), NewValue));
-		NewValue = (NewValue > 0) ? NewValue : 0;
-	}
+	
 }
 
 void UHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+
+	if(Data.EvaluatedData.Attribute == GetDamageAttribute())
+	{
+		const float localDamageDone = GetDamage();
+		SetDamage(0);
+
+		if(localDamageDone > 0)
+		{
+			const float NewHealth = GetHealth() - localDamageDone;
+			SetHealth(FMath::Clamp(NewHealth, 0, GetMaxHealth()));	
+		}
+	}
 	
 }
 

@@ -25,7 +25,7 @@ void UHealthComponent::BeginPlay()
 	}
 	if(ASC && GetOwner()->HasAuthority())
 	{
-		HealthSet = NewObject<UHealthSet>();
+		HealthSet = NewObject<UHealthSet>(GetOwner());
 		ASC->AddAttributeSetSubobject(HealthSet);
 		
 		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
@@ -54,7 +54,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		FGameplayEffectSpec* spec = SpecHandle.Data.Get();
 		if(spec)
 		{
-			spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), -Damage);
+			spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), Damage);
 		}
 
 		ASC->ApplyGameplayEffectSpecToSelf(*spec);

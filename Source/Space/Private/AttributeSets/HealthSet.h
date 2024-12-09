@@ -20,12 +20,20 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing= OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UHealthSet, MaxHealth)
-
+	
+	
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& oldHealth);
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& oldMaxHealth);
 
+
+	
+	// Damage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health
+	// Temporary value that only exists on the Server. Not replicated.
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(UHealthSet, Damage)
 public:
 	UHealthSet();
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
