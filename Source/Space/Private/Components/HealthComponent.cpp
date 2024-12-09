@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "AttributeSets/HealthSet.h"
+#include "GameplayEffects/DamageEffect.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -41,6 +42,23 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	AController* InstigatedBy, AActor* DamageCauser)
 {
 	//TODO apply damage effect
+	if(!ASC)return;
+	TSubclassOf<UGameplayEffect> DamageEffectClass = UDamageEffect::StaticClass();
+	FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
+	EffectContext.AddInstigator(GetOwner(), GetOwner());
+
+	FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, EffectContext);
+
+	if(SpecHandle.IsValid())
+	{
+		FGameplayEffectSpec* spec = SpecHandle.Data.Get();
+		if(spec)
+		{
+			spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), -Damage);
+		}
+
+		ASC->ApplyGameplayEffectSpecToSelf(*spec);
+	}
 }
 
 void UHealthComponent::HealthAttributeChanged(const FOnAttributeChangeData& data)

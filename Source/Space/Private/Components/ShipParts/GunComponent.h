@@ -7,6 +7,7 @@
 #include "GunComponent.generated.h"
 
 
+class UGameplayEffect;
 class UAbilitySystemComponent;
 class UTargetableComponent;
 class UPoolManagerComponent;
@@ -29,13 +30,19 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Gun Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
 	float Damage = 10;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Gun Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
 	int32 RoundsPerMinute = 60;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Turret)
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
+	TSubclassOf<UGameplayEffect> OptionalGameplayEffectClass;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UPoolManagerComponent> ProjectilePool;
+
+	
 private:
 	float fireTimer = 0;
 

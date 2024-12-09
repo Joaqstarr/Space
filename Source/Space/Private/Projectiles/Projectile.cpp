@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "../Actors/Targetable.h"
 #include "Components/SphereComponent.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 // Sets default values
@@ -50,22 +51,27 @@ void AProjectile::BeginPlay()
 void AProjectile::OnSphereComponentHit(UPrimitiveComponent* HitComponent,
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-//	UE_LOG(LogTemp, Display, TEXT("OnSphereComponentHit"));
-	if (OtherActor && OtherActor != this && OtherActor != InstigatorActor.Get())
+	FDamageEvent event;
+	OtherActor->TakeDamage(Damage, event, GetInstigatorController(), GetInstigator());
+
+	//apply optional gameplay effect
+	if(GameplayEffectSpecHandle != nullptr)
 	{
-	//	UE_LOG(LogTemp, Display, TEXT("inside 1"));
-
-		UAbilitySystemComponent* TargetASC = OtherActor->FindComponentByClass<UAbilitySystemComponent>();
-		if (TargetASC && GameplayEffectSpecHandle.IsValid())
+		if (OtherActor && OtherActor != this && OtherActor != InstigatorActor.Get())
 		{
-			//UE_LOG(LogTemp, Display, TEXT("inside 2"));
 
-			// Apply the Gameplay Effect Spec to the target
-			TargetASC->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpecHandle.Data.Get());
+			UAbilitySystemComponent* TargetASC = OtherActor->FindComponentByClass<UAbilitySystemComponent>();
+			if (TargetASC && GameplayEffectSpecHandle.IsValid())
+			{
+
+				// Apply the Gameplay Effect Spec to the target
+				TargetASC->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpecHandle.Data.Get());
+			}
+
+
 		}
-
-
 	}
+	
 	// Destroy the projectile
 	Execute_Deactivate(this);
 }
@@ -158,11 +164,11 @@ void AProjectile::SetTarget(ATargetable* target)
 	ProjectileMovementComponent->HomingTargetComponent = targetComp;
 }
 
-void AProjectile::InitializeProjectile(FGameplayEffectSpecHandle specHandle, AActor* instigatorActor)
+void AProjectile::InitializeProjectile(const FInitializeProjectileParams& initializeProjectileParams)
 {
-		
-	this->GameplayEffectSpecHandle = specHandle;
-	this->InstigatorActor = instigatorActor;
+	this->Damage = initializeProjectileParams.Damage;
+	this->GameplayEffectSpecHandle = initializeProjectileParams.OptionalAdditionalEffect;
+	this->InstigatorActor = initializeProjectileParams.InstigatorActor;
 }
 
 

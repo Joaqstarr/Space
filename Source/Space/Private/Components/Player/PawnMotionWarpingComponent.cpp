@@ -153,7 +153,7 @@ FRotator UPawnMotionWarpingComponent::CalculateWarpDirection(const FRotator root
 	// Use FVector::Slerp for smooth direction adjustment
 	FVector transformedDir = FVector::SlerpVectorToDirection(startDir, directionToTarget, interpVal);
 	
-
+	
 	return transformedDir.Rotation();
 }
 

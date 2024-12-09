@@ -13,6 +13,17 @@ class ATargetable;
 class USphereComponent;
 class UProjectileMovementComponent;
 
+USTRUCT()
+struct FInitializeProjectileParams
+{
+	GENERATED_BODY()
+public:
+	float Damage;
+	FGameplayEffectSpecHandle OptionalAdditionalEffect;
+	UPROPERTY()
+	AActor* InstigatorActor;
+};
+
 UCLASS()
 class AProjectile : public AActor, public IPoolableInterface
 {
@@ -29,12 +40,13 @@ public:
 	virtual bool IsInactive_Implementation() override;
 
 	void SetTarget(ATargetable* target);
-	void InitializeProjectile(FGameplayEffectSpecHandle specHandle, AActor* instigatorActor);
+	void InitializeProjectile(const FInitializeProjectileParams& initializeProjectileParams);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	UPROPERTY(BlueprintReadOnly)
+	float Damage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile Stats")
 	float LifeTime = 5;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile Stats")

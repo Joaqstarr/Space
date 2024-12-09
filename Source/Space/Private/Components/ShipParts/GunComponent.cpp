@@ -64,29 +64,20 @@ void UGunComponent::Fire(ATargetable* lockedOnTarget)
 
 		//UE_LOG(LogTemp, Display, TEXT("fire"));
 
-		if(AbilitySystemComponent)
+		FInitializeProjectileParams projectileParams;
+		projectileParams.Damage = Damage;
+		projectileParams.InstigatorActor = GetOwner();
+		
+		if(AbilitySystemComponent && OptionalGameplayEffectClass)
 		{
-
-			TSubclassOf<UGameplayEffect> DamageEffectClass = UDamageEffect::StaticClass();
 			FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
 			EffectContext.AddInstigator(GetOwner(), GetOwner());
 
-			FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, EffectContext);
-
-			if(SpecHandle.IsValid())
-			{
-				FGameplayEffectSpec* spec = SpecHandle.Data.Get();
-				if(spec)
-				{
-					spec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Effects.Damage"), -Damage);
-				}
-			}
-			asProjectile->InitializeProjectile(SpecHandle,GetOwner());
-
-		}else
-		{
-			asProjectile->InitializeProjectile(nullptr,GetOwner());
+			projectileParams.OptionalAdditionalEffect = AbilitySystemComponent->MakeOutgoingSpec(OptionalGameplayEffectClass, 1.0f, EffectContext);
 		}
+
+		asProjectile->InitializeProjectile(projectileParams);
+
 	}
 	
 	if(projectile->Implements<UPoolableInterface>())
