@@ -34,6 +34,9 @@ void UBarrelRollAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 
 			animInstance->Montage_Play(RollMontage, 1 , EMontagePlayReturnType::Duration, 0, true);
 			animInstance->OnMontageEnded.AddDynamic(this, &UBarrelRollAbility::OnRollFinished);
+
+			FVector impulseDir =ActorInfo->AvatarActor->GetVelocity().GetSafeNormal();
+			skm->AddImpulse(impulseDir * RollImpulseStrength, NAME_None, true);
 			return;
 		}
 	}
