@@ -36,6 +36,8 @@ protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateMousePos(const FVector2D& delta);
+	UFUNCTION(BlueprintCallable)
+	FVector2D UpdateStickLook(const FVector2D& stickLookInput);
 	FVector2D MousePos{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

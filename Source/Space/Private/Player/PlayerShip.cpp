@@ -27,7 +27,7 @@ APlayerShip::APlayerShip() : AShip()
 }
 
 FVector2D APlayerShip::GetMousePos(bool affectedByDeadzone) const
-{
+	{
 	FVector2D mousePosNorm {MousePos/MouseRadius};
 
 	if(affectedByDeadzone)
@@ -94,6 +94,14 @@ FVector2D APlayerShip::UpdateMousePos(const FVector2D& delta)
 		MousePos.Normalize();
 		MousePos = MousePos * MouseRadius;
 	}
+	return MousePos;
+}
+
+FVector2D APlayerShip::UpdateStickLook(const FVector2D& stickLookInput)
+{
+	MousePos.X = MouseRadius * stickLookInput.X;
+	MousePos.Y = MouseRadius * stickLookInput.Y;
+
 	return MousePos;
 }
 
