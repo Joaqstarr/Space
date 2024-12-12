@@ -4,8 +4,11 @@
 #include "Player/Weapons/Sword.h"
 
 #include "KismetTraceUtils.h"
+#include "Camera/CameraShakeSourceComponent.h"
+#include "Components/HealthComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/DamageEvents.h"
+
 // Sets default values
 ASword::ASword()
 {
@@ -13,6 +16,8 @@ ASword::ASword()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+	CameraShakeSourceComponent = CreateDefaultSubobject<UCameraShakeSourceComponent>(TEXT("CameraShakeSourceComponent"));
+	CameraShakeSourceComponent->bAutoStart = false;
 }
 
 void ASword::DisableDamage_Implementation()
@@ -65,15 +70,26 @@ void ASword::SweepAndApplyDamage()
 			instigator = swordHolder->GetInstigatorController();
 		}
 
+		bool hit = false;
+		
 		for(FHitResult hitResult : results)
 		{
 			if(hitResult.GetActor())
 			{
 				FDamageEvent event;
 				IgnoredActors.Add(hitResult.GetActor());
-				
+
+				if (hitResult.GetActor()->GetComponentByClass<UHealthComponent>())
+				{
+					hit = true;
+				}
 				hitResult.GetActor()->TakeDamage(Damage, event, instigator, this);
 			}
+		}
+
+		if (hit)
+		{
+			CameraShakeSourceComponent->Start();
 		}
 	}
 }
@@ -86,6 +102,16 @@ void ASword::Tick(float DeltaSeconds)
 	{
 		SweepAndApplyDamage();
 	}
+}
+
+void ASword::BeginPlay()
+{
+	Super::BeginPlay();
+	if ( OnHitCameraShake)
+	{
+		CameraShakeSourceComponent->CameraShake = OnHitCameraShake;
+	}
+
 }
 
 

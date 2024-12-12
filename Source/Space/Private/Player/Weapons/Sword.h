@@ -30,20 +30,23 @@ protected:
 	float Damage = 5;
 	UPROPERTY(EditAnywhere, Category="Weapon Stats")
 	float SphereTraceRadius = 100;
-
+	UPROPERTY(EditAnywhere, Category="Weapon Stats")
+	TSubclassOf<UCameraShakeBase> OnHitCameraShake;
+	
 	UPROPERTY(EditAnywhere)
 	bool bDebugDraw = false;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> SwordMesh;
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCameraShakeSourceComponent> CameraShakeSourceComponent;
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsDamageEnabled = false;
 
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;
-
+	virtual void BeginPlay() override;
 private:
 	UPROPERTY()
 	TArray<AActor*> IgnoredActors;
