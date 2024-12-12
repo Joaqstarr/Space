@@ -10,6 +10,10 @@
 
 USwordSwingAbility::USwordSwingAbility()	
 {
+	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.Roll"), true));
+	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.SwordSwing"), true));
+
+	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Effects.Cooldown.SwordSwing"), true));
 }
 
 void USwordSwingAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,

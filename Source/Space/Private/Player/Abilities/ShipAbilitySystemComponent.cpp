@@ -9,6 +9,8 @@ UShipAbilitySystemComponent::UShipAbilitySystemComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	SetIsReplicated(true);
+
+
 }
 
 

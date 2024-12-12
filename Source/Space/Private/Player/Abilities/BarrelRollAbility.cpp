@@ -12,7 +12,11 @@ UBarrelRollAbility::UBarrelRollAbility()
 	ImmunityEffectClass = UImmunityEffect::StaticClass();
 
 	CooldownDuration = 1.5f;
-	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.Roll"), true));
+	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Effects.Cooldown.Roll"), true));
+
+	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.Roll"), true));
+	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.SwordSwing"), true));
+
 }
 
 void UBarrelRollAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
