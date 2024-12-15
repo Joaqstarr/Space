@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
@@ -14,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthDepletedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChangedSignature, int, NewHealth, int, MaxHealth);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UHealthComponent : public UActorComponent
+class UHealthComponent : public UActorComponent, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -27,7 +28,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetMaxHealth() const {return MaxHealth;}
-
+	
+	UFUNCTION(BlueprintCallable)
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+public:
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthChangedSignature OnHealthChanged;
 	

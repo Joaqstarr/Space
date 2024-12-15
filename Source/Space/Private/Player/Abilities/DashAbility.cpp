@@ -32,7 +32,7 @@ void UDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	const UVectorPayload* payload = Cast<UVectorPayload>(TriggerEventData->OptionalObject);
 
-	if (payload->VectorData.Length() == 0)
+	if (!payload || payload->VectorData.Length() == 0)
 	{
 		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;

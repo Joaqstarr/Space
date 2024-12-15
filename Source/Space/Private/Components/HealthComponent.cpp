@@ -15,14 +15,23 @@ UHealthComponent::UHealthComponent()
 
 }
 
-void UHealthComponent::BeginPlay()
+UAbilitySystemComponent* UHealthComponent::GetAbilitySystemComponent() const
 {
-	Super::BeginPlay();
+
 	IAbilitySystemInterface* asASC = Cast<IAbilitySystemInterface>(GetOwner());
 	if(asASC)
 	{
-		ASC = asASC->GetAbilitySystemComponent();
+		return  asASC->GetAbilitySystemComponent();
 	}
+	return nullptr;
+}
+
+void UHealthComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	ASC = GetAbilitySystemComponent();
+	
 	if(ASC && GetOwner()->HasAuthority())
 	{
 		HealthSet = NewObject<UHealthSet>(GetOwner());
@@ -34,14 +43,13 @@ void UHealthComponent::BeginPlay()
 		bool found = false;
 		MaxHealth = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
 	}
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeDamage);
 	
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeDamage);
 }
 
 void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	//TODO apply damage effect
 	if(!ASC)return;
 	TSubclassOf<UGameplayEffect> DamageEffectClass = UDamageEffect::StaticClass();
 	FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
