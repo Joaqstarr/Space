@@ -7,11 +7,13 @@
 // Sets default values
 ASpacePawn::ASpacePawn()
 {
+	SetReplicates(true);
+	
 	AbilitySystemComponent = CreateDefaultSubobject<UShipAbilitySystemComponent>( FName("AbilitySystemComponent"));
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	AbilitySystemComponent->SetIsReplicated(true);
-	bReplicates = true;
 	bAlwaysRelevant = true;
+
 }
 
 UAbilitySystemComponent* ASpacePawn::GetAbilitySystemComponent() const
@@ -34,6 +36,8 @@ void ASpacePawn::PossessedBy(AController* NewController)
 // Called when the game starts or when spawned
 void ASpacePawn::BeginPlay()
 {
+	SetReplicateMovement(true);
+
 	Super::BeginPlay();
 	
 	InitDefaultAttributes();

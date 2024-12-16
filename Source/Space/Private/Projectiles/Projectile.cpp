@@ -12,6 +12,8 @@
 // Sets default values
 AProjectile::AProjectile()
 {
+	bReplicates = true;
+	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -43,6 +45,8 @@ AProjectile::AProjectile()
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
 {
+	SetReplicateMovement(true);
+
 	Super::BeginPlay();
 	ProjectileMovementComponent->OnComponentActivated.AddDynamic(this, &AProjectile::OnProjectileMCActivated);
 	SphereHitbox->OnComponentHit.AddDynamic(this, &AProjectile::OnSphereComponentHit);

@@ -146,6 +146,9 @@ void UTargetingHandlerComponent::FilterTargetsWithScreen()
 	if(!TargetingCamera)return;
 
 	FVector2D viewPortSize;
+	
+	if (!GEngine || !GEngine->GameViewport)return;
+	
 	GEngine->GameViewport->GetViewportSize(viewPortSize);
 
 	for(ATargetable* target : PotentialTargets)
