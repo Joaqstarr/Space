@@ -17,6 +17,7 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 
 	if (!TriggerEventData || !ActorInfo)
 	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
@@ -25,6 +26,7 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 	if (!Payload->Implements<UFactoryPayload>())
 	{
 		UE_LOG(LogTemp, Error, TEXT("ShootGunAbility: Invalid factory payload."));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
@@ -34,12 +36,14 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 	if (Projectile == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ShootGunAbility: No projectile received from payload factory."));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
 	if (ActorInfo->SkeletalMeshComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ShootGunAbility: No mesh set"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
