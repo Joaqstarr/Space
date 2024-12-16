@@ -16,6 +16,38 @@ class UTargetingHandlerComponent;
 class USkeletalMeshComponent;
 class UPawnMotionWarpingComponent;
 
+USTRUCT(Blueprintable)
+struct FShipInputState
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(BlueprintReadWrite)
+	float ForwardThrust;
+
+	UPROPERTY(BlueprintReadWrite)
+	float SidewaysThrust;
+
+	UPROPERTY(BlueprintReadWrite)
+	float VerticalThrust;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float PitchInput;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float YawInput;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float RollInput;
+
+	FShipInputState()
+		: ForwardThrust(0), SidewaysThrust(0), VerticalThrust(0),
+		  PitchInput(0), YawInput(0), RollInput(0) {}
+	
+	FShipInputState(float forward, float sideways, float vertical, float pitch, float yaw, float roll)
+		: ForwardThrust(forward), SidewaysThrust(sideways), VerticalThrust(vertical), PitchInput(pitch), YawInput(yaw), RollInput(roll) {}
+};
+
 UCLASS()
 class APlayerShip : public AShip
 {
@@ -29,7 +61,7 @@ public:
 	ATargetable* GetCurrentTarget();
 
 	UPawnMotionWarpingComponent* GetMotionWarping();
-
+	
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
@@ -37,7 +69,12 @@ protected:
 	FVector2D UpdateMousePos(const FVector2D& delta);
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateStickLook(const FVector2D& stickLookInput);
+	
+	UFUNCTION(BlueprintCallable)
+	void ApplyInput(FShipInputState inputState);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void ServerSendInput(FShipInputState inputState);
 protected:
 	FVector2D MousePos{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

@@ -21,6 +21,7 @@ AShip::AShip() : Super()
 	MinNetUpdateFrequency = 30;
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	
 	ShipMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("ShipMesh")));
 	ShipMeshComponent->SetSimulatePhysics(true);
@@ -60,25 +61,6 @@ void AShip::BeginPlay()
 void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
-	if (HasAuthority()) // Server updates authoritative state
-	{
-		ReplicatedLocation = GetActorLocation();
-		ReplicatedRotation = GetActorRotation();
-		ReplicatedVel = ShipMeshComponent->GetPhysicsLinearVelocity();
-	}
-	
-	if (!HasAuthority())
-	{
-		// Interpolate to smooth out movement
-		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), ReplicatedLocation, DeltaTime, 5.5);
-		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), ReplicatedRotation, DeltaTime, 5.5);
-		
-		SetActorLocationAndRotation(NewLocation, NewRotation, false, nullptr, ETeleportType::TeleportPhysics);
-
-		ShipMeshComponent->SetPhysicsLinearVelocity(ReplicatedVel);
-	}
 	
 }
 
@@ -94,51 +76,25 @@ void AShip::AddRoll(float rollAmount)
 
 	AddTorqueControlAroundAxis(rollAmount, FVector(1,0, 0), ShipStats->RollSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
-	if (!HasAuthority())
-	{
-		if (IsLocallyControlled())
-			ServerAddRoll(rollAmount);
-	}
-
 }
 
-void AShip::ServerAddRoll_Implementation(float rollAmount)
-{
-	AddRoll(rollAmount);
-}
 
 
 void AShip::AddPitch(float pitchAmount)
 {
 	AddTorqueControlAroundAxis(-pitchAmount, FVector(0,1, 0), ShipStats->PitchSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
-	if (!HasAuthority())
-	{
-		if (IsLocallyControlled())
-			ServerAddPitch(pitchAmount);
-	}
 }
 
-void AShip::ServerAddPitch_Implementation(float pitchAmount)
-{
-	AddPitch(pitchAmount);
-}
+
 
 void AShip::AddYaw(float yawAmount)
 {
 	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
-	if (!HasAuthority())
-	{
-		if (IsLocallyControlled())
-			ServerAddYaw(yawAmount);
-	}
 }
 
-void AShip::ServerAddYaw_Implementation(float yawAmount)
-{
-	AddYaw(yawAmount);
-}
+
 //returns speed lost
 float AShip::ApplyBrakes(FVector movementDir) const
 {
@@ -210,10 +166,7 @@ void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float
 
 void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust)
 {
-	if (!HasAuthority()){
-		if (IsLocallyControlled())
-			ServerAddThrust(forwardThrust, sidewaysThrust, verticalThrust);
-	}
+
 	
 	FVector forward {ShipMeshComponent->GetForwardVector()};
 	FVector right {ShipMeshComponent->GetRightVector()};
@@ -239,10 +192,7 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 }
 
-void AShip::ServerAddThrust_Implementation(float forwardThrust, float sidewaysThrust, float verticalThrust)
-{
-	AddThrust(forwardThrust, sidewaysThrust, verticalThrust);
-}
+
 
 void AShip::TryDash(FVector inputDirection)
 {
@@ -259,13 +209,3 @@ void AShip::TryDash(FVector inputDirection)
 	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
 }
 
-void AShip::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AShip, ReplicatedLocation);
-	DOREPLIFETIME(AShip, ReplicatedRotation);
-	DOREPLIFETIME(AShip, ReplicatedVel);
-
-
-}

@@ -40,25 +40,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddRoll(float rollAmount);
-	UFUNCTION(Server, Unreliable)
-	void ServerAddRoll(float rollAmount);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void AddPitch(float pitchAmount);
-	UFUNCTION(server, Unreliable)
-	void ServerAddPitch(float pitchAmount);
 	
 	UFUNCTION(BlueprintCallable)
 	void AddYaw(float yawAmount);
-	UFUNCTION(server, Unreliable)
-	void ServerAddYaw(float yawAmount);
 	
 	UFUNCTION(BlueprintCallable)
 	void AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
-	UFUNCTION(server, Unreliable)
-	void ServerAddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust);
 
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	void TryDash(FVector inputDirection);
@@ -86,13 +78,5 @@ private:
 	void AddTorqueControlAroundAxis(float inputAmount, const FVector& axis, float maxSpeed, float strength, float damp) const;
 	void ApplyMovementForce(const FVector& direction, float inputValue, float maxSpeed, float forceScale) const;
 
-private:
-	UPROPERTY(Replicated)
-	FVector ReplicatedLocation;
-
-	UPROPERTY(Replicated)
-	FRotator ReplicatedRotation;
-	UPROPERTY(Replicated)
-	FVector ReplicatedVel;
 
 };

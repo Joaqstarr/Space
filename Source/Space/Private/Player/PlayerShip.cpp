@@ -107,5 +107,20 @@ FVector2D APlayerShip::UpdateStickLook(const FVector2D& stickLookInput)
 	return MousePos;
 }
 
+void APlayerShip::ApplyInput(FShipInputState inputState)
+{
+	AddRoll(inputState.RollInput);
+	AddPitch(inputState.PitchInput);
+	AddYaw(inputState.YawInput);
+
+	AddThrust(inputState.ForwardThrust, inputState.SidewaysThrust, inputState.VerticalThrust);
+}
+
+void APlayerShip::ServerSendInput_Implementation(FShipInputState inputState)
+{
+	ApplyInput(inputState);
+}
+
+
 
 
