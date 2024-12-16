@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/Player/PawnMotionWarpingComponent.h"
 #include "Components/Player/TargetingHandlerComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Weapons/Sword.h"
 
@@ -49,6 +50,7 @@ UPawnMotionWarpingComponent* APlayerShip::GetMotionWarping()
 {
 	return PawnMotionWarpingComponent;
 }
+
 
 
 void APlayerShip::SetupSwordActor()

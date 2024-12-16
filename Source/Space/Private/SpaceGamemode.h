@@ -13,5 +13,7 @@ UCLASS()
 class ASpaceGamemode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void StartPlay() override;
 };

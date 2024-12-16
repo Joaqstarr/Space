@@ -30,7 +30,6 @@ public:
 
 	UPawnMotionWarpingComponent* GetMotionWarping();
 
-	
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
@@ -38,8 +37,9 @@ protected:
 	FVector2D UpdateMousePos(const FVector2D& delta);
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateStickLook(const FVector2D& stickLookInput);
-	FVector2D MousePos{};
 
+protected:
+	FVector2D MousePos{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UTargetingHandlerComponent> TargetingManager;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

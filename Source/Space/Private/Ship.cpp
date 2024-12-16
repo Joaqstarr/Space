@@ -10,12 +10,15 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/Physics/GravityComponent.h"
 #include "Components/Physics/HoverComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/Abilities/DashAbility.h"
 #include "Utility/VectorPayload.h"
 
 // Sets default values
 AShip::AShip() : Super()
 {
+	NetUpdateFrequency = 60;
+	MinNetUpdateFrequency = 30;
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
@@ -26,7 +29,10 @@ AShip::AShip() : Super()
 	ShipMeshComponent->SetSimulatePhysics(true);
 	ShipMeshComponent->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 	ShipMeshComponent->SetGenerateOverlapEvents(true);
+	ShipMeshComponent->SetIsReplicated(true);
+	
 	SetRootComponent(ShipMeshComponent);
+	
 	
 	GravityComponent = CreateDefaultSubobject<UGravityComponent>("Gravity Component");
 	HoverComponent = CreateDefaultSubobject<UHoverComponent>("Hover Component");
@@ -55,11 +61,24 @@ void AShip::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(TargetLookLocation)
-	{
-		RotateToFaceLocationPhysics(TargetLookLocation->GetComponentLocation(), 20, DeltaTime/GetWorld()->GetWorldSettings()->TimeDilation);
-	}
 
+	if (HasAuthority()) // Server updates authoritative state
+	{
+		ReplicatedLocation = GetActorLocation();
+		ReplicatedRotation = GetActorRotation();
+		ReplicatedVel = ShipMeshComponent->GetPhysicsLinearVelocity();
+	}
+	
+	if (!HasAuthority())
+	{
+		// Interpolate to smooth out movement
+		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), ReplicatedLocation, DeltaTime, 5.5);
+		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), ReplicatedRotation, DeltaTime, 5.5);
+		
+		SetActorLocationAndRotation(NewLocation, NewRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+		ShipMeshComponent->SetPhysicsLinearVelocity(ReplicatedVel);
+	}
 	
 }
 
@@ -72,17 +91,54 @@ void AShip::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AShip::AddRoll(float rollAmount)
 {
-	if(IsRotatingToLookAtTarget)return;
+
 	AddTorqueControlAroundAxis(rollAmount, FVector(1,0, 0), ShipStats->RollSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
 
+	if (!HasAuthority())
+	{
+		if (IsLocallyControlled())
+			ServerAddRoll(rollAmount);
+	}
+
 }
+
+void AShip::ServerAddRoll_Implementation(float rollAmount)
+{
+	AddRoll(rollAmount);
+}
+
 
 void AShip::AddPitch(float pitchAmount)
 {
-	if(IsRotatingToLookAtTarget)return;
 	AddTorqueControlAroundAxis(-pitchAmount, FVector(0,1, 0), ShipStats->PitchSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
+
+	if (!HasAuthority())
+	{
+		if (IsLocallyControlled())
+			ServerAddPitch(pitchAmount);
+	}
 }
 
+void AShip::ServerAddPitch_Implementation(float pitchAmount)
+{
+	AddPitch(pitchAmount);
+}
+
+void AShip::AddYaw(float yawAmount)
+{
+	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
+
+	if (!HasAuthority())
+	{
+		if (IsLocallyControlled())
+			ServerAddYaw(yawAmount);
+	}
+}
+
+void AShip::ServerAddYaw_Implementation(float yawAmount)
+{
+	AddYaw(yawAmount);
+}
 //returns speed lost
 float AShip::ApplyBrakes(FVector movementDir) const
 {
@@ -150,14 +206,15 @@ void AShip::ApplyMovementForce(const FVector& direction, float inputValue, float
 	ShipMeshComponent->AddForce(force * ShipMeshComponent->GetMass());
 }
 
-void AShip::AddYaw(float yawAmount)
-{
-	if(IsRotatingToLookAtTarget)return;
-	AddTorqueControlAroundAxis(yawAmount, FVector(0,0, 1), ShipStats->YawSpeed, ShipStats->TorqueStrength, ShipStats->Damping);
-}
+
 
 void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalThrust)
 {
+	if (!HasAuthority()){
+		if (IsLocallyControlled())
+			ServerAddThrust(forwardThrust, sidewaysThrust, verticalThrust);
+	}
+	
 	FVector forward {ShipMeshComponent->GetForwardVector()};
 	FVector right {ShipMeshComponent->GetRightVector()};
 	FVector up {ShipMeshComponent->GetUpVector()};
@@ -182,6 +239,11 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 }
 
+void AShip::ServerAddThrust_Implementation(float forwardThrust, float sidewaysThrust, float verticalThrust)
+{
+	AddThrust(forwardThrust, sidewaysThrust, verticalThrust);
+}
+
 void AShip::TryDash(FVector inputDirection)
 {
 	UVectorPayload* payload = NewObject<UVectorPayload>();
@@ -197,49 +259,13 @@ void AShip::TryDash(FVector inputDirection)
 	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
 }
 
-void AShip::RotateToFaceLocationPhysics(FVector targetLocation, float torqueStrength, float deltaTime)
+void AShip::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
-	if(!IsRotatingToLookAtTarget)return;
-	if (!GetRootComponent() || !GetRootComponent()->IsSimulatingPhysics())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Root Component is not simulating physics!"));
-		return;
-	}
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// Get current location and forward vector
-	FVector CurrentLocation = GetActorLocation();
-	FVector ForwardVector = GetActorForwardVector();
-
-	// Calculate the target direction
-	FVector TargetDirection = (targetLocation - CurrentLocation).GetSafeNormal();
-	if (TargetDirection.IsNearlyZero())
-	{
-		return; // Avoid invalid direction
-	}
-
-	// Calculate the rotation needed to align forward vector with the target direction
-	FVector CrossProduct = FVector::CrossProduct(ForwardVector, TargetDirection);
-	float DotProduct = FVector::DotProduct(ForwardVector, TargetDirection);
-	float Angle = FMath::Acos(FMath::Clamp(DotProduct, -1.0f, 1.0f));
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::Printf(TEXT("Dot: %f"), DotProduct));
+	DOREPLIFETIME(AShip, ReplicatedLocation);
+	DOREPLIFETIME(AShip, ReplicatedRotation);
+	DOREPLIFETIME(AShip, ReplicatedVel);
 
 
-	// Convert the angle to torque
-	//FVector Torque = CrossProduct * (Angle / deltaTime) * torqueStrength;
-	FVector Torque = CrossProduct * (Angle * torqueStrength);
-
-	// Apply the torque
-	UPrimitiveComponent* rootComponent = Cast<UPrimitiveComponent>(GetRootComponent());
-	if (rootComponent)
-	{
-		if(DotProduct >= 0.97f)
-		{
-			rootComponent->SetPhysicsAngularVelocityInRadians(FVector::Zero());
-			TargetLookLocation = nullptr;
-			IsRotatingToLookAtTarget = false;
-		}else
-		{
-			rootComponent->AddTorqueInRadians(Torque, NAME_None, true);
-		}
-	}
 }

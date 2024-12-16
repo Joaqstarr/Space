@@ -97,8 +97,6 @@ void UDashAbility::UpdateDirectionAndStrengthForTarget(FVector& dir, float& stre
 	//FVector aheadPos = ULookAtComponent::LookAheadByVelocity(target->GetActorLocation(), target->GetRootComponent()->GetComponentVelocity(), asPlayer->GetActorLocation(), strength);
 	dir = dirToTarget; //(aheadPos - asPlayer->GetActorLocation()).GetSafeNormal();
 	strength = distToTarget -100;
-
 	
-	asPlayer->SetAutoLookAtTarget(target->GetRootComponent());
 }
 
