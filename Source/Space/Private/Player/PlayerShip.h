@@ -61,7 +61,7 @@ public:
 	ATargetable* GetCurrentTarget();
 
 	UPawnMotionWarpingComponent* GetMotionWarping();
-	
+
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
@@ -73,7 +73,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ApplyInput(FShipInputState inputState);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void ServerSendInput(FShipInputState inputState);
 protected:
 	FVector2D MousePos{};
@@ -106,5 +106,5 @@ private:
 	TObjectPtr<UUserWidget> TargetLockWidget;
 private:
 	void SetupSwordActor();
- 
+
 };

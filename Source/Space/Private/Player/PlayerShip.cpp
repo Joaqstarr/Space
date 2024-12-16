@@ -53,6 +53,7 @@ UPawnMotionWarpingComponent* APlayerShip::GetMotionWarping()
 
 
 
+
 void APlayerShip::SetupSwordActor()
 {
 	if(SwordClass)
@@ -64,17 +65,13 @@ void APlayerShip::SetupSwordActor()
 	}
 }
 
+
+
 void APlayerShip::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	/*
-	if(GEngine && MotionWarpingComponent)
-	{
 
-		const AActor* target = MotionWarpingComponent->GetWarpTarget();
-		if(target)
-			GEngine->AddOnScreenDebugMessage(66, 2, FColor::Red, target->GetActorLocation().ToString());
-	}*/
+
 }
 
 void APlayerShip::BeginPlay()
