@@ -39,7 +39,7 @@ public:
 	virtual void Reset_Implementation() override;
 	virtual bool IsInactive_Implementation() override;
 
-	void SetTarget(ATargetable* target);
+	void SetTarget(const ATargetable* target);
 	void InitializeProjectile(const FInitializeProjectileParams& initializeProjectileParams);
 
 protected:

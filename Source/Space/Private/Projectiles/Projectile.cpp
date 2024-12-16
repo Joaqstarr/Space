@@ -63,7 +63,6 @@ void AProjectile::OnSphereComponentHit(UPrimitiveComponent* HitComponent,
 	{
 		if (OtherActor && OtherActor != this && OtherActor != InstigatorActor.Get())
 		{
-
 			UAbilitySystemComponent* TargetASC = OtherActor->FindComponentByClass<UAbilitySystemComponent>();
 			if (TargetASC && GameplayEffectSpecHandle.IsValid())
 			{
@@ -126,6 +125,7 @@ void AProjectile::Deactivate_Implementation()
 {
 	IPoolableInterface::Deactivate_Implementation();
 
+
 	if(UPrimitiveComponent* asPrimitive = Cast<UPrimitiveComponent>(GetRootComponent()))
 	{
 		asPrimitive->IgnoreActorWhenMoving(GetOwner(), false);
@@ -147,7 +147,6 @@ void AProjectile::Reset_Implementation()
 	auto TimerDelegate = FTimerDelegate::CreateUObject(this, &AProjectile::Deactivate_Implementation);
 
 	GetWorldTimerManager().SetTimer(DespawnTimerHandle, TimerDelegate, LifeTime, false);
-	
 }
 
 
@@ -156,7 +155,7 @@ bool AProjectile::IsInactive_Implementation()
 	return !GetActorEnableCollision() && IsHidden();
 }
 
-void AProjectile::SetTarget(ATargetable* target)
+void AProjectile::SetTarget(const ATargetable* target)
 {
 	//USceneComponent* asScene = Cast<USceneComponent>(target);
 	ProjectileMovementComponent->bIsHomingProjectile = (target != nullptr);
