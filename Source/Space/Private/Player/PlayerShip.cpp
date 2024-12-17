@@ -59,7 +59,7 @@ void APlayerShip::SetupSwordActor()
 	if(SwordClass)
 	{
 		SwordActor = GetWorld()->SpawnActor<ASword>(SwordClass);
-		SwordActor->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WingBladeSocket"));
+		SwordActor->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WingBladeSocket"));
 		SwordActor->SetOwner(this);
 		SwordActor->SetInstigator(this);
 	}
