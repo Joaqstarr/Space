@@ -6,10 +6,8 @@
 #include "AbilitySystemComponent.h"
 #include "Actors/Targetable.h"
 #include "AttributeSets/DashSet.h"
-#include "Components/ShipParts/LookAtComponent.h"
-#include "GameplayEffects/CooldownEffect.h"
 #include "Player/PlayerShip.h"
-#include "Utility/VectorPayload.h"
+#include "GameplayAbilities/Public/Abilities/GameplayAbilityTargetTypes.h"
 
 UDashAbility::UDashAbility()
 {
@@ -22,6 +20,9 @@ UDashAbility::UDashAbility()
 	FAbilityTriggerData triggerEvent;
 	triggerEvent.TriggerTag = dashTag;
 	AbilityTriggers.Add(triggerEvent);
+
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	
 }
 
@@ -29,18 +30,25 @@ void UDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
                                    const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	const UVectorPayload* payload = Cast<UVectorPayload>(TriggerEventData->OptionalObject);
-
-	if (!payload || payload->VectorData.Length() == 0)
+	
+	if (TriggerEventData->TargetData.Num() == 0)
 	{
+		UE_LOG(LogTemp, Error, TEXT("DashAbility: No Target Data"));
 		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
-	Dash(payload->VectorData);
 
-	//ApplyCooldown(Handle, ActorInfo, ActivationInfo);
-	//CommitAbilityCooldown(Handle, ActorInfo, ActivationInfo, false, nullptr);
+	//retrieving direction vector from target hit result impact point
+	const FGameplayAbilityTargetData_SingleTargetHit* payload = static_cast<FGameplayAbilityTargetData_SingleTargetHit*>(TriggerEventData->TargetData.Data[0].Get());
+	if (!payload)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DashAbility: Target Data Cast Failed"));
+
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		return;
+	}
+	Dash(payload->HitResult.ImpactPoint);
+
 	CommitAbility(Handle, ActorInfo, ActivationInfo, nullptr);
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

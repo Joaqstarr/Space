@@ -28,6 +28,7 @@ void ASpacePawn::PossessedBy(AController* NewController)
 	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		AbilitySystemComponent->RefreshAbilityActorInfo();
 	}
 
 	SetOwner(NewController);

@@ -196,16 +196,32 @@ void AShip::AddThrust(float forwardThrust, float sidewaysThrust, float verticalT
 
 void AShip::TryDash(FVector inputDirection)
 {
-	UVectorPayload* payload = NewObject<UVectorPayload>();
-	payload->VectorData = inputDirection;
-	
 	FGameplayEventData eventData;
 	eventData.Instigator = this;
 	eventData.Target = this;
-	eventData.OptionalObject = payload;
 	eventData.EventTag = FGameplayTag::RequestGameplayTag(FName("Ship.Action.Dash"));
-	
 
-	AbilitySystemComponent->HandleGameplayEvent(eventData.EventTag, &eventData);
+	//required to use new here, GAS cleans automatically
+	FGameplayAbilityTargetData_SingleTargetHit* targetData = new FGameplayAbilityTargetData_SingleTargetHit();
+	targetData->HitResult.ImpactPoint = inputDirection;  // Use ImpactPoint to store the FVector data
+
+	// Wrap TargetData into a TargetDataHandle
+	eventData.TargetData.Add(targetData);
+
+	UAbilitySystemComponent* asc = GetAbilitySystemComponent();
+
+	if (asc)
+	{
+		int num = asc->HandleGameplayEvent(eventData.EventTag, &eventData);
+		TArray<FGameplayAbilitySpecHandle> outAbilityHandles;
+		AbilitySystemComponent->GetAllAbilities(outAbilityHandles);
+
+	}else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Ship: Unable to find ASC when activating dash."));
+	}
 }
+
+
+
 

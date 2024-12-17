@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "VectorPayload.generated.h"
 
 /**
@@ -14,6 +13,10 @@ class UVectorPayload : public UObject
 
 public:
 
-	UPROPERTY(BlueprintReadWrite, Category = "Payload")
+	UPROPERTY(BlueprintReadWrite, Category = "Payload", Replicated)
 	FVector VectorData;
+
+	virtual bool IsSupportedForNetworking() const override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 };
