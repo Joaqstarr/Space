@@ -14,6 +14,9 @@ USwordSwingAbility::USwordSwingAbility()
 	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ship.Action.SwordSwing"), true));
 
 	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Effects.Cooldown.SwordSwing"), true));
+
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
 void USwordSwingAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -67,6 +70,7 @@ void USwordSwingAbility::AddMotionWarpingTarget(FName warpTargetName, AActor* wa
 
 	motionWarpingComponent->SetWarpTarget(warpActor);
 }
+
 
 void USwordSwingAbility::TargetDataReceived(const FGameplayAbilityTargetDataHandle& data)
 {
