@@ -26,7 +26,7 @@ protected:
 	TSubclassOf<UGameplayEffect> ImmunityEffectClass;
 private:
 	UFUNCTION()
-	void OnRollFinished(UAnimMontage* montage, bool bInterrupted);
+	void OnRollFinished();
 
 private:
 	FActiveGameplayEffectHandle ActiveGameplayEffect;
