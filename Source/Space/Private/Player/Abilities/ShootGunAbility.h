@@ -6,6 +6,8 @@
 #include "Player/Abilities/CooldownGameplayAbility.h"
 #include "ShootGunAbility.generated.h"
 
+struct FGameplayTag;
+
 /**
  * 
  */
@@ -23,5 +25,8 @@ protected:
 	float Damage = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Stats")
-	TSubclassOf<UGameplayEffect> OptionalGameplayEffectClass;
+	TSubclassOf<UGameplayEffect> OptionalProjectileEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects")
+	TSubclassOf<UGameplayEffect> ShootEffect;
 };
