@@ -1,19 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Player/SpacePlayerController.h"
 
-#include "AbilitySystemComponent.h"
-#include "SpacePawn.h"
+#include "Blueprint/UserWidget.h"
 
-void ASpacePlayerController::AcknowledgePossession(class APawn* p)
+
+
+void ASpacePlayerController::SetupDefaultWidget_Implementation()
 {
-	Super::AcknowledgePossession(p);
-
-	ASpacePawn* asSpacePawn = Cast<ASpacePawn>(p);
-
-	if (asSpacePawn)
+	if (IsLocalPlayerController() && DefaultWidgetClass)
 	{
-		asSpacePawn->GetAbilitySystemComponent()->InitAbilityActorInfo(asSpacePawn, asSpacePawn);
+		DefaultWidget = CreateWidget(this, DefaultWidgetClass, FName("ControllerWidget"));
+
+		if (DefaultWidget)
+		{
+			DefaultWidget->AddToViewport(0);
+		}
+	}else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Controller Widget creation failed. Is default class set?"));
+	}
+	
+}
+
+void ASpacePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocalPlayerController())
+	{
+		SetupDefaultWidget();
 	}
 }

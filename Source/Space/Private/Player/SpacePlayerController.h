@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "SpacePlayerController.generated.h"
 
+class UUserWidget;
+class APawn;
 /**
  * 
  */
@@ -13,6 +15,13 @@ UCLASS()
 class ASpacePlayerController : public APlayerController
 {
 	GENERATED_BODY()
-public:
-	virtual void AcknowledgePossession(class APawn* p) override;
+protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void SetupDefaultWidget();
+	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> DefaultWidgetClass;
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UUserWidget> DefaultWidget;
 };
