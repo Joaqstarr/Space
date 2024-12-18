@@ -104,7 +104,19 @@ FVector2D APlayerShip::UpdateStickLook(const FVector2D& stickLookInput)
 	return MousePos;
 }
 
-void APlayerShip::ApplyInput(FShipInputState inputState)
+void APlayerShip::ApplyNetworkedInput(const FShipInputState& input)
+{
+	if (IsLocallyControlled())
+	{
+		ApplyInput(input);
+
+		if (!HasAuthority())
+		{
+			ServerSendInput(input);
+		}
+	}
+}
+void APlayerShip::ApplyInput(const FShipInputState& inputState)
 {
 	AddRoll(inputState.RollInput);
 	AddPitch(inputState.PitchInput);
@@ -113,10 +125,11 @@ void APlayerShip::ApplyInput(FShipInputState inputState)
 	AddThrust(inputState.ForwardThrust, inputState.SidewaysThrust, inputState.VerticalThrust);
 }
 
-void APlayerShip::ServerSendInput_Implementation(FShipInputState inputState)
+void APlayerShip::ServerSendInput_Implementation(const FShipInputState& inputState)
 {
 	ApplyInput(inputState);
 }
+
 
 
 

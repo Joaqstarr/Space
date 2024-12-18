@@ -69,12 +69,12 @@ protected:
 	FVector2D UpdateMousePos(const FVector2D& delta);
 	UFUNCTION(BlueprintCallable)
 	FVector2D UpdateStickLook(const FVector2D& stickLookInput);
-	
-	UFUNCTION(BlueprintCallable)
-	void ApplyInput(FShipInputState inputState);
 
-	UFUNCTION(BlueprintCallable, Server, Unreliable)
-	void ServerSendInput(FShipInputState inputState);
+	UFUNCTION(BlueprintCallable)
+	void ApplyNetworkedInput(const FShipInputState& input);
+	void ApplyInput(const FShipInputState& inputState);
+	UFUNCTION(Server, Unreliable)
+	void ServerSendInput(const FShipInputState& inputState);
 protected:
 	FVector2D MousePos{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

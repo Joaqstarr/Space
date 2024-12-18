@@ -37,10 +37,10 @@ void ASpacePawn::PossessedBy(AController* NewController)
 // Called when the game starts or when spawned
 void ASpacePawn::BeginPlay()
 {
-	SetReplicateMovement(true);
-
 	Super::BeginPlay();
 	
+	SetReplicateMovement(true);
+
 	InitDefaultAttributes();
 	GiveDefaultAbilities();
 }
