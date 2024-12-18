@@ -26,7 +26,7 @@ const FGameplayTagContainer* UCooldownGameplayAbility::GetCooldownTags() const
 void UCooldownGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle handle,
 	const FGameplayAbilityActorInfo* actorInfo, const FGameplayAbilityActivationInfo activationInfo) const
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "Cooldown applied");
+	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("Cooldown applied: %f"), CooldownDuration.GetValueAtLevel(GetAbilityLevel())));
 	if (UGameplayEffect* cooldownGE = GetCooldownGameplayEffect())
 	{
 		FGameplayEffectSpecHandle specHandle = MakeOutgoingGameplayEffectSpec(cooldownGE->GetClass(), GetAbilityLevel());

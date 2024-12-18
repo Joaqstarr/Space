@@ -7,8 +7,11 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayEffect.h"
 #include "Actors/Targetable.h"
+#include "Utility/LambdaFactoryPayload.h"
+#include "Utility/TransformPayload.h"
 #include "Components/ObjectPooling/PoolableInterface.h"
 #include "Components/ObjectPooling/PoolManagerComponent.h"
+#include "Components/Player/TargetingHandlerComponent.h"
 #include "GameplayEffects/DamageEffect.h"
 #include "Projectiles/Projectile.h"
 
@@ -18,8 +21,6 @@ UGunComponent::UGunComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-
 }
 
 
@@ -28,7 +29,6 @@ void UGunComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	IAbilitySystemInterface* ownerASC = Cast<IAbilitySystemInterface>(GetOwner());
 	if (ownerASC)
 	{
@@ -36,53 +36,25 @@ void UGunComponent::BeginPlay()
 	}
 }
 
-
-// Called every frame
-void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGunComponent::ServerFire_Implementation(ATargetable* Target)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	fireTimer -= DeltaTime;
+	FGameplayEventData EventData;
+	EventData.EventTag = AbilityTag;
+	EventData.Instigator = GetOwner();
+	EventData.Target = Target;
 
-	// ...
-}
-
-void UGunComponent::Fire(ATargetable* lockedOnTarget)
-{
-	if(fireTimer > 0)return;
-	if(!ProjectilePool)return;
-	
-	AActor* projectile =  ProjectilePool->GetPooledActor();
-	if(!projectile)return;
-
-	fireTimer = 60.f/RoundsPerMinute;
-	projectile->SetActorLocation(GetComponentLocation());
-	projectile->SetActorRotation(GetComponentRotation());
-	
-	if(AProjectile* asProjectile = Cast<AProjectile>(projectile))
-	{
-		asProjectile->SetTarget(lockedOnTarget);
-
-		//UE_LOG(LogTemp, Display, TEXT("fire"));
-
-		FInitializeProjectileParams projectileParams;
-		projectileParams.Damage = Damage;
-		projectileParams.InstigatorActor = GetOwner();
-		
-		if(AbilitySystemComponent && OptionalGameplayEffectClass)
+	ULambdaFactoryPayload* GetProjectilePayload = NewObject<ULambdaFactoryPayload>();
+	GetProjectilePayload->Bind([&]()
 		{
-			FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
-			EffectContext.AddInstigator(GetOwner(), GetOwner());
-
-			projectileParams.OptionalAdditionalEffect = AbilitySystemComponent->MakeOutgoingSpec(OptionalGameplayEffectClass, 1.0f, EffectContext);
+			return ProjectilePool->GetPooledActor();
 		}
+	);
+	EventData.OptionalObject = GetProjectilePayload;
 
-		asProjectile->InitializeProjectile(projectileParams);
+	UTransformPayload* SpawnTransformPayload = NewObject<UTransformPayload>();
+	SpawnTransformPayload->TransformData = GetComponentTransform();
+	EventData.OptionalObject2 = SpawnTransformPayload;
 
-	}
-	
-	if(projectile->Implements<UPoolableInterface>())
-	{
-		IPoolableInterface::Execute_Reset(projectile);
-	}
+	AbilitySystemComponent->HandleGameplayEvent(EventData.EventTag, &EventData);
 }
 

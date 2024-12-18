@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "GameplayTagContainer.h"
 #include "GunComponent.generated.h"
-
 
 class UGameplayEffect;
 class UAbilitySystemComponent;
-class UTargetableComponent;
 class UPoolManagerComponent;
+class UTargetingHandlerComponent;
+class ATargetable;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UGunComponent : public USceneComponent
@@ -18,34 +19,29 @@ class UGunComponent : public USceneComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UGunComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	UFUNCTION(BlueprintCallable)
-	void Fire(ATargetable* lockedOnTarget);
-	void SetDamage(float newDamage) {Damage = newDamage;};
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerFire(ATargetable* Target);
+
+	void SetDamage(float NewDamage) {Damage = NewDamage;};
 	
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
 	float Damage = 10;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
-	int32 RoundsPerMinute = 60;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="Weapon Stats")
-	TSubclassOf<UGameplayEffect> OptionalGameplayEffectClass;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag AbilityTag;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UPoolManagerComponent> ProjectilePool;
 
-	
-private:
-	float fireTimer = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadwrite)
+	TObjectPtr<UTargetingHandlerComponent> TargetManager;
 
+private:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };

@@ -15,6 +15,7 @@ class UShootGunAbility : public UCooldownGameplayAbility
 	GENERATED_BODY()
 	
 public:
+	UShootGunAbility();
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 protected:

@@ -5,54 +5,63 @@
 #include "ShootGunAbility.h"
 #include "Components/ObjectPooling/PoolManagerComponent.h"
 #include "Utility/FactoryPayload.h"
+#include "Utility/TransformPayload.h"
 #include "Projectiles/Projectile.h"
 #include "AbilitySystemComponent.h"
 #include "Actors/Targetable.h"
+
+UShootGunAbility::UShootGunAbility()
+{
+	FGameplayTag AbilityTag{ FGameplayTag::RequestGameplayTag(FName("Ship.Action.ShootGun")) };
+	AbilityTags.AddTag(AbilityTag);
+
+	FAbilityTriggerData TriggerEvent;
+	TriggerEvent.TriggerTag = AbilityTag;
+	AbilityTriggers.Add(TriggerEvent);
+
+}
 
 void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	// Validate pointers and get passed info
-
 	if (!TriggerEventData || !ActorInfo)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
 
-	const UObject* Payload = TriggerEventData->OptionalObject;
+	const UObject* ProjectileFactoryPayload = TriggerEventData->OptionalObject;
 
-	if (!Payload->Implements<UFactoryPayload>())
+	if (!ProjectileFactoryPayload || !ProjectileFactoryPayload->Implements<UFactoryPayload>())
 	{
 		UE_LOG(LogTemp, Error, TEXT("ShootGunAbility: Invalid factory payload."));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
 
-	AProjectile* Projectile = Cast<AProjectile>(IFactoryPayload::Execute_CreateInstance(Payload));
+	AProjectile* Projectile = Cast<AProjectile>(IFactoryPayload::Execute_CreateInstance(ProjectileFactoryPayload));
 	
 	// This could be because the pool ran out of objects or an mismatched factory type was received
 	if (Projectile == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ShootGunAbility: No projectile received from payload factory."));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
 
-	if (ActorInfo->SkeletalMeshComponent == nullptr)
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShootGunAbility: No mesh set"));
+		Projectile->Destroy();
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
 	}
 
-	TWeakObjectPtr<USkeletalMeshComponent> Mesh = ActorInfo->SkeletalMeshComponent;
-
-	CommitAbility(Handle, ActorInfo, ActivationInfo);
-
-	Projectile->SetActorLocation(Mesh->GetSocketLocation("Gun"));
-	Projectile->SetActorRotation(Mesh->GetSocketRotation("Gun"));
+	if (const UTransformPayload* SpawnLocation = Cast<UTransformPayload>(TriggerEventData->OptionalObject2))
+	{
+		Projectile->SetActorLocation(SpawnLocation->TransformData.GetLocation());
+		Projectile->SetActorRotation(SpawnLocation->TransformData.GetRotation());
+	}
 
 	if (const ATargetable* LockOnTarget = Cast<ATargetable>(TriggerEventData->Target))
 	{
