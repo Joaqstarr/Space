@@ -41,6 +41,14 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 		return;
 	}
 
+	const UTransformPayload* SpawnTransform = Cast<UTransformPayload>(TriggerEventData->OptionalObject2);
+	if (!SpawnTransform)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShootGunAbility: No spawn transform specified."));
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		return;
+	}
+
 	AProjectile* Projectile = Cast<AProjectile>(IFactoryPayload::Execute_CreateInstance(ProjectileFactoryPayload));
 	
 	// This could be because the pool ran out of objects or an mismatched factory type was received
@@ -50,18 +58,15 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
-
+	
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		Projectile->Destroy();
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
 
-	if (const UTransformPayload* SpawnLocation = Cast<UTransformPayload>(TriggerEventData->OptionalObject2))
-	{
-		Projectile->SetActorLocation(SpawnLocation->TransformData.GetLocation());
-		Projectile->SetActorRotation(SpawnLocation->TransformData.GetRotation());
-	}
+	Projectile->SetActorLocation(SpawnTransform->TransformData.GetLocation());
+	Projectile->SetActorRotation(SpawnTransform->TransformData.GetRotation());
 
 	if (const ATargetable* LockOnTarget = Cast<ATargetable>(TriggerEventData->Target))
 	{
@@ -75,12 +80,12 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 	projectileParams.InstigatorActor = Avatar;
 
 	UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-	if (ASC != nullptr && OptionalGameplayEffectClass)
+	if (ASC != nullptr && OptionalProjectileEffect)
 	{
 		FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
 		EffectContext.AddInstigator(Avatar, Avatar);
 
-		projectileParams.OptionalAdditionalEffect = ASC->MakeOutgoingSpec(OptionalGameplayEffectClass, 1.0f, EffectContext);
+		projectileParams.OptionalAdditionalEffect = ASC->MakeOutgoingSpec(OptionalProjectileEffect, 1.0f, EffectContext);
 	}
 
 	Projectile->InitializeProjectile(projectileParams);
@@ -89,6 +94,17 @@ void UShootGunAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 	if (Projectile->Implements<UPoolableInterface>())
 	{
 		IPoolableInterface::Execute_Reset(Projectile);
+	}
+
+	if (ASC != nullptr && ShootEffect)
+	{
+		FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
+
+		EffectContext.AddOrigin(SpawnTransform->TransformData.GetLocation());
+		EffectContext.AddSourceObject(SpawnTransform);
+
+		FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(ShootEffect, 1.0f, EffectContext);
+		ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 	}
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, true);

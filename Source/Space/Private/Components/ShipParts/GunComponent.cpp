@@ -49,6 +49,7 @@ void UGunComponent::ServerFire_Implementation(ATargetable* Target)
 			return ProjectilePool->GetPooledActor();
 		}
 	);
+	
 	EventData.OptionalObject = GetProjectilePayload;
 
 	UTransformPayload* SpawnTransformPayload = NewObject<UTransformPayload>();
