@@ -24,10 +24,10 @@ public:
 	UHealthComponent();
 	
 	UFUNCTION(BlueprintCallable)
-	int GetHealth() const {return Health;}
+	int GetHealth() const;
 
 	UFUNCTION(BlueprintCallable)
-	int GetMaxHealth() const {return MaxHealth;}
+	int GetMaxHealth() const;
 	
 	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -46,15 +46,14 @@ protected:
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 private:
-	UPROPERTY(VisibleInstanceOnly, Category="Default")
-	float Health = 100.0f;
-	UPROPERTY(VisibleAnywhere, Category="Default")
-	float MaxHealth = 100;
 
 	void HealthAttributeChanged(const FOnAttributeChangeData& data);
 
 	void MaxHealthAttributeChanged(const FOnAttributeChangeData& data);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MULTICASTHealthChange(float newHealth, float maxHealth);
+	
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> ASC;
 };

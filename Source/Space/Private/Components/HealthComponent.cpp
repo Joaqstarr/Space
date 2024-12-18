@@ -15,6 +15,31 @@ UHealthComponent::UHealthComponent()
 
 }
 
+int UHealthComponent::GetHealth() const
+{
+	bool found = false;
+	int hp = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+	
+
+	if (!found)
+		UE_LOG(LogTemp, Error, TEXT("Get Health: Health Attribute Set not found"));
+
+	return hp;
+}
+
+int UHealthComponent::GetMaxHealth() const
+{
+	bool found = false;
+	int max = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+	
+	if (found)
+		return max;
+	
+	UE_LOG(LogTemp, Error, TEXT("Get Max Health: Health Attribute Set not found"));
+
+	return 1;
+}
+
 UAbilitySystemComponent* UHealthComponent::GetAbilitySystemComponent() const
 {
 
@@ -40,8 +65,6 @@ void UHealthComponent::BeginPlay()
 		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
 		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetMaxHealthAttribute()).AddUObject(this, &UHealthComponent::MaxHealthAttributeChanged);
 
-		bool found = false;
-		MaxHealth = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
 	}
 	
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeDamage);
@@ -71,17 +94,29 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 
 void UHealthComponent::HealthAttributeChanged(const FOnAttributeChangeData& data)
 {
-	OnHealthChanged.Broadcast(data.NewValue, MaxHealth);
-	Health = data.NewValue;
-	if(data.NewValue <= 0)
-	{
-		OnHealthDepleted.Broadcast();
-	}
+	bool found;
+	int max = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+
+	MULTICASTHealthChange(data.NewValue, max);
+	
 }
 
 void UHealthComponent::MaxHealthAttributeChanged(const FOnAttributeChangeData& data)
 {
-	MaxHealth = data.NewValue;
+	bool found;
+	int currentHp = ASC->GetGameplayAttributeValue(UHealthSet::GetHealthAttribute(), found);
+
+	MULTICASTHealthChange(currentHp, data.NewValue);
+}
+
+void UHealthComponent::MULTICASTHealthChange_Implementation(float newHealth, float maxHealth)
+{
+	OnHealthChanged.Broadcast(newHealth, maxHealth);
+
+	if(newHealth <= 0)
+	{
+		OnHealthDepleted.Broadcast();
+	}
 }
 
 
