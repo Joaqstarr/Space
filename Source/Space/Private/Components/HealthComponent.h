@@ -31,6 +31,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthChangedSignature OnHealthChanged;
@@ -40,19 +42,24 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
 	UHealthSet* HealthSet;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	int Health = 100;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	int MaxHealth = 100;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 private:
-
+	
 	void HealthAttributeChanged(const FOnAttributeChangeData& data);
-
 	void MaxHealthAttributeChanged(const FOnAttributeChangeData& data);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MULTICASTHealthChange(float newHealth, float maxHealth);
+	
+	void InitializeHealthValues();
+	void CreateHealthAttributeSet();
 	
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> ASC;

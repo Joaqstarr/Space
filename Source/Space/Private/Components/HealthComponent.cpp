@@ -17,6 +17,9 @@ UHealthComponent::UHealthComponent()
 
 int UHealthComponent::GetHealth() const
 {
+	return Health;
+
+	/*
 	bool found = false;
 	int hp = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
 	
@@ -24,11 +27,13 @@ int UHealthComponent::GetHealth() const
 	if (!found)
 		UE_LOG(LogTemp, Error, TEXT("Get Health: Health Attribute Set not found"));
 
-	return hp;
+	return hp;*/
 }
 
 int UHealthComponent::GetMaxHealth() const
 {
+	return MaxHealth;
+	/*
 	bool found = false;
 	int max = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
 	
@@ -38,6 +43,7 @@ int UHealthComponent::GetMaxHealth() const
 	UE_LOG(LogTemp, Error, TEXT("Get Max Health: Health Attribute Set not found"));
 
 	return 1;
+	*/
 }
 
 UAbilitySystemComponent* UHealthComponent::GetAbilitySystemComponent() const
@@ -51,21 +57,37 @@ UAbilitySystemComponent* UHealthComponent::GetAbilitySystemComponent() const
 	return nullptr;
 }
 
+void UHealthComponent::InitializeHealthValues()
+{
+	if (ASC)
+	{
+		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
+		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetMaxHealthAttribute()).AddUObject(this, &UHealthComponent::MaxHealthAttributeChanged);
+		bool found = false;
+		Health = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+		MaxHealth = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+	}
+}
+
+void UHealthComponent::CreateHealthAttributeSet()
+{
+	if(ASC && GetOwner()->HasAuthority())
+	{
+		HealthSet = NewObject<UHealthSet>(GetOwner());
+		ASC->AddAttributeSetSubobject(HealthSet);
+		
+		
+	}
+}
+
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	ASC = GetAbilitySystemComponent();
 	
-	if(ASC && GetOwner()->HasAuthority())
-	{
-		HealthSet = NewObject<UHealthSet>(GetOwner());
-		ASC->AddAttributeSetSubobject(HealthSet);
-		
-		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetHealthAttribute()).AddUObject(this, &UHealthComponent::HealthAttributeChanged);
-		ASC->GetGameplayAttributeValueChangeDelegate(UHealthSet::GetMaxHealthAttribute()).AddUObject(this, &UHealthComponent::MaxHealthAttributeChanged);
-
-	}
+	CreateHealthAttributeSet();
+	InitializeHealthValues();
 	
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeDamage);
 }
@@ -94,30 +116,21 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 
 void UHealthComponent::HealthAttributeChanged(const FOnAttributeChangeData& data)
 {
-	bool found;
-	int max = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
+	Health = data.NewValue;
+	OnHealthChanged.Broadcast(Health, MaxHealth);
 
-	MULTICASTHealthChange(data.NewValue, max);
-	
-}
-
-void UHealthComponent::MaxHealthAttributeChanged(const FOnAttributeChangeData& data)
-{
-	bool found;
-	int currentHp = ASC->GetGameplayAttributeValue(UHealthSet::GetHealthAttribute(), found);
-
-	MULTICASTHealthChange(currentHp, data.NewValue);
-}
-
-void UHealthComponent::MULTICASTHealthChange_Implementation(float newHealth, float maxHealth)
-{
-	OnHealthChanged.Broadcast(newHealth, maxHealth);
-
-	if(newHealth <= 0)
+	if(Health <= 0)
 	{
 		OnHealthDepleted.Broadcast();
 	}
 }
+
+void UHealthComponent::MaxHealthAttributeChanged(const FOnAttributeChangeData& data)
+{
+	MaxHealth = data.NewValue;
+}
+
+
 
 
 
