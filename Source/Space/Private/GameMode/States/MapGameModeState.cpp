@@ -7,3 +7,7 @@ void UMapGameModeState::OnEnterState_Implementation()
 {
 	
 }
+
+void UMapGameModeState::OnExitState_Implementation()
+{
+}

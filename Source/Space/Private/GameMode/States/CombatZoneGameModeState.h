@@ -4,16 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Utility/StateMachine/StateMachine.h"
-#include "MapGameModeState.generated.h"
+#include "CombatZoneGameModeState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UMapGameModeState : public UStateMachine
+class UCombatZoneGameModeState : public UStateMachine
 {
 	GENERATED_BODY()
+
 public:
 	virtual void OnEnterState_Implementation() override;
 	virtual void OnExitState_Implementation() override;
+protected:
+	
 };

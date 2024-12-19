@@ -11,23 +11,31 @@ ASpaceGamemode::ASpaceGamemode()
 	StateMachineClass = UGameModeStateMachine::StaticClass();
 }
 
+void ASpaceGamemode::SwitchToCombatZoneState()
+{
+	if (!StateMachine)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("State machine is null"));
+		return;
+	}
+	StateMachine->SwitchToCombatZoneState();
+}
+
+void ASpaceGamemode::SwitchToMapState()
+{
+	if (!StateMachine)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("State machine is null"));
+		return;
+	}
+	StateMachine->SwitchToMapState();
+}
+
 void ASpaceGamemode::StartPlay()
 {
 	Super::StartPlay();
 
 	StateMachine = NewObject<UGameModeStateMachine>(this, StateMachineClass);
 	StateMachine->InitializeStateMachine(nullptr);
-
-	/*
-	UPhysicsSettings* physicsSettings = UPhysicsSettings::Get();
-	if (physicsSettings)
-	{
-		physicsSettings->bSubstepping = true;
-		physicsSettings->MaxSubstepDeltaTime = 1.0f / 60.0f; // Match desired frame rate
-		physicsSettings->MaxSubsteps = 5;
-
-		UE_LOG(LogTemp, Log, TEXT("Physics Substepping Configured: MaxSubstepDeltaTime = %f, MaxSubsteps = %d"),
-			physicsSettings->MaxSubstepDeltaTime, physicsSettings->MaxSubsteps);
-	}*/
 	
 }

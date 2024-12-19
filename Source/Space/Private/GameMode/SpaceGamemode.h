@@ -18,6 +18,11 @@ class ASpaceGamemode : public AGameModeBase
 
 public:
 	ASpaceGamemode();
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchToCombatZoneState();
+	UFUNCTION(BlueprintCallable)
+	void SwitchToMapState();
 protected:
 	virtual void StartPlay() override;
 	
