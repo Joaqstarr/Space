@@ -18,32 +18,11 @@ UHealthComponent::UHealthComponent()
 int UHealthComponent::GetHealth() const
 {
 	return Health;
-
-	/*
-	bool found = false;
-	int hp = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
-	
-
-	if (!found)
-		UE_LOG(LogTemp, Error, TEXT("Get Health: Health Attribute Set not found"));
-
-	return hp;*/
 }
 
 int UHealthComponent::GetMaxHealth() const
 {
 	return MaxHealth;
-	/*
-	bool found = false;
-	int max = ASC->GetGameplayAttributeValue(UHealthSet::GetMaxHealthAttribute(), found);
-	
-	if (found)
-		return max;
-	
-	UE_LOG(LogTemp, Error, TEXT("Get Max Health: Health Attribute Set not found"));
-
-	return 1;
-	*/
 }
 
 UAbilitySystemComponent* UHealthComponent::GetAbilitySystemComponent() const

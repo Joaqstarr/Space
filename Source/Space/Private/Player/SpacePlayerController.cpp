@@ -12,15 +12,29 @@ void ASpacePlayerController::SetupDefaultWidget_Implementation()
 	{
 		DefaultWidget = CreateWidget(this, DefaultWidgetClass, FName("ControllerWidget"));
 
-		if (DefaultWidget)
-		{
-			DefaultWidget->AddToViewport(0);
-		}
+		EnterPlayerController();
+
 	}else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Controller Widget creation failed. Is default class set?"));
 	}
 	
+}
+
+void ASpacePlayerController::EnterPlayerController()
+{
+	if (DefaultWidget)
+	{
+		DefaultWidget->AddToViewport(0);
+	}
+}
+
+void ASpacePlayerController::ExitPlayerController()
+{
+	if (IsLocalPlayerController() && DefaultWidget)
+	{
+		DefaultWidget->RemoveFromParent();
+	}
 }
 
 void ASpacePlayerController::BeginPlay()

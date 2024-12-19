@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "SpaceGamemode.generated.h"
 
+class UMapGameModeState;
+class UGameModeStateMachine;
 /**
  * 
  */
@@ -14,6 +16,14 @@ class ASpaceGamemode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+public:
+	ASpaceGamemode();
 protected:
 	virtual void StartPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="States")
+	TSubclassOf<UGameModeStateMachine> StateMachineClass;
+	
+	UPROPERTY()
+	TObjectPtr<UGameModeStateMachine> StateMachine;
 };

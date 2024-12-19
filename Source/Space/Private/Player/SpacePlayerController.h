@@ -15,11 +15,18 @@ UCLASS()
 class ASpacePlayerController : public APlayerController
 {
 	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual void EnterPlayerController();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ExitPlayerController();
 protected:
+	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void SetupDefaultWidget();
-	virtual void BeginPlay() override;
-	
+
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> DefaultWidgetClass;
 	UPROPERTY(BlueprintReadWrite)

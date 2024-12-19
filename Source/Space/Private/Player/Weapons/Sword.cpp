@@ -107,10 +107,9 @@ void ASword::Tick(float DeltaSeconds)
 void ASword::BeginPlay()
 {
 	Super::BeginPlay();
-	if ( OnHitCameraShake)
-	{
-		CameraShakeSourceComponent->CameraShake = OnHitCameraShake;
-	}
+
+	CameraShakeSourceComponent->CameraShake = OnHitCameraShake;
+	
 
 }
 
