@@ -6,11 +6,14 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "EnemyManagerWorldSubsystem.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTokensAllocated, int, NumTokens);
+
 struct FTokenConsumer
 {
 	int Id;
 	int Priority;
 	int TokensAllocated;
+	FOnTokensAllocated Callback;
 };
 
 /**
@@ -25,20 +28,13 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	/* 
-	*	Assigns a certain number of spawning tokens to the enemy manager.
-	*	Tokens represent how many enemies are allowed to be spawned.
-	*/
-	UFUNCTION(BlueprintCallable)
-	void SetTokens(int Amount);
-
 	/* Gets the total number of tokens currently held by the enemy manager. */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetTotalTokens() const;
 
 	/*
-		Changes the amount of tokens held by the enemy manager. Final token amount is clamped to be positive.
-		@param Amount The number of tokens that is added. Can be negative to subtract tokens.
+	*	Changes the amount of tokens held by the enemy manager. Final token amount is clamped to be positive.
+	*	@param Amount The number of tokens that is added. Can be negative to subtract tokens.
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ModifyTokens(int Amount);
@@ -51,7 +47,7 @@ public:
 	*   @return true if ConsumerId was not previously registered
 	*/
 	UFUNCTION(BlueprintCallable)
-	bool RegisterTokenConsumer(int ConsumerId, int Priority);
+	bool RegisterTokenConsumer(int ConsumerId, int Priority, FOnTokensAllocated Callback);
 
 	/* 
 	*	Unregisters a consumer. Any tokens assigned to it will be reallocated to remaining consumers.
@@ -67,10 +63,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetAssignedTokens(int ConsumerId) const;
 
+	/*
+	*	Requests for more tokens to be reallocated to a consumer from other consumers in the system
+	*	@param ConsumerId Consumer to allocate more tokens to
+	*	@param Tokens Target number of tokens to give to the consumer
+	*	@return Number of tokens that were able to be given to the consumer
+	*/
+	UFUNCTION(BlueprintCallable)
+	int RequestAdditionalTokens(int ConsumerId, int Tokens);
+
+	/*
+	*	Distributes all available tokens among all consumers.
+	*	Consumers with higher priority will be allocated more tokens.
+	*	@param Tokens Number of tokens to distribute
+	*/
+	UFUNCTION(BlueprintCallable)
+	void DistributeTokens(int Tokens);
+
+	UFUNCTION(BlueprintCallable)
+	void DebugPrintState();
+
 private:
 	int TotalTokens;
-	int TotalPriority;
 	TMap<int, FTokenConsumer> Consumers;
 
-	void AllocateTokens();
+	void TransferTokens(int SourceId, int TargetId, int Amount);
 };

@@ -12,11 +12,6 @@ void UEnemyManagerWorldSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-void UEnemyManagerWorldSubsystem::SetTokens(int Amount)
-{
-	TotalTokens = Amount;
-}
-
 int UEnemyManagerWorldSubsystem::GetTotalTokens() const
 {
 	return TotalTokens;
@@ -27,21 +22,18 @@ void UEnemyManagerWorldSubsystem::ModifyTokens(int Amount)
 	TotalTokens = FMath::Max(0, TotalTokens + Amount);
 }
 
-bool UEnemyManagerWorldSubsystem::RegisterTokenConsumer(int ConsumerId, int Priority)
+bool UEnemyManagerWorldSubsystem::RegisterTokenConsumer(int ConsumerId, int Priority, FOnTokensAllocated Callback)
 {
 	bool IsDuplicate = Consumers.Contains(ConsumerId);
 	if (IsDuplicate)
 	{
-		TotalPriority += Priority - Consumers[ConsumerId].Priority;
 		Consumers[ConsumerId].Priority = Priority;
+		Consumers[ConsumerId].Callback = Callback;
 	}
 	else
 	{
-		TotalPriority += Priority;
-		Consumers.Emplace(ConsumerId, {ConsumerId, Priority, 0});
+		Consumers.Emplace(ConsumerId, {ConsumerId, Priority, 0, Callback});
 	}
-
-	AllocateTokens();
 
 	return !IsDuplicate;
 }
@@ -50,10 +42,13 @@ bool UEnemyManagerWorldSubsystem::UnregisterTokenConsumer(int ConsumerId)
 {
 	if (Consumers.Contains(ConsumerId))
 	{
-		TotalPriority -= Consumers[ConsumerId].Priority;
-		Consumers.Remove(TotalPriority);
+		int TokensHeld = Consumers[ConsumerId].TokensAllocated;
+		TotalTokens -= TokensHeld;
 
-		AllocateTokens();
+		Consumers[ConsumerId].Callback.ExecuteIfBound(0);
+		Consumers.Remove(ConsumerId);
+
+		DistributeTokens(TokensHeld);
 
 		return true;
 	}
@@ -69,26 +64,31 @@ int UEnemyManagerWorldSubsystem::GetAssignedTokens(int ConsumerId) const
 	return Consumers[ConsumerId].TokensAllocated;
 }
 
-void UEnemyManagerWorldSubsystem::AllocateTokens()
+void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens)
 {
-	if (TotalPriority == 0)
+	if (Tokens <= 0) { return; }
+
+	TotalTokens += Tokens;
+
+	int TotalPriority = 0;
+	for (const auto& Consumer : Consumers)
 	{
-		return;
+		TotalPriority += Consumer.Value.Priority;
 	}
 
-	TArray<int> Keys;
-	Consumers.GetKeys(Keys);
+	if (TotalPriority == 0) { return; }
+
 
 	int TotalTokensAllocated = 0;
-	for (const auto& Key : Keys)
+	for (auto& Consumer : Consumers)
 	{
-		int NumTokens = FMath::Floor(static_cast<float>(Consumers[Key].Priority) / TotalPriority * TotalTokens);
+		int NumTokens = FMath::Floor(static_cast<float>(Consumer.Value.Priority) / TotalPriority * Tokens);
 
 		TotalTokensAllocated += NumTokens;
-		Consumers[Key].TokensAllocated = NumTokens;
+		Consumer.Value.TokensAllocated += NumTokens;
 	}
 
-	int TokensLeftover = TotalTokens - TotalTokensAllocated;
+	int TokensLeftover = Tokens - TotalTokensAllocated;
 
 	if (TokensLeftover == 0)
 	{
@@ -103,8 +103,122 @@ void UEnemyManagerWorldSubsystem::AllocateTokens()
 		}
 	);
 
-	for (int i = 0; i < TokensLeftover; ++i)
+	int LeftoversAssigned = 0;
+	for (auto& Consumer : Consumers)
 	{
-		Consumers[Keys[i]].TokensAllocated++;
+		if (LeftoversAssigned == TokensLeftover)
+		{
+			break;
+		}
+		++Consumer.Value.TokensAllocated;
+		++LeftoversAssigned;
 	}
+
+	// Notify all consumers of their newly allocated tokens
+	for (const auto& Consumer : Consumers)
+	{
+		Consumer.Value.Callback.ExecuteIfBound(Consumer.Value.TokensAllocated);
+	}
+}
+
+void UEnemyManagerWorldSubsystem::DebugPrintState()
+{
+	FString Output = FString::Printf(TEXT("Enemy Manager Subsystem State:\n Total Tokens: %d\n"), TotalTokens);
+	for (const auto& Consumer : Consumers)
+	{
+		Output += FString::Printf(TEXT("Consumer %d with priority %d has %d tokens.\n"), Consumer.Value.Id, Consumer.Value.Priority, Consumer.Value.TokensAllocated);
+	}
+	UE_LOG(LogTemp, Log, TEXT("%s"), *Output);
+}
+
+// TODO: Eventually add this to some in between buffer to represent the "travel time" of reinforcements
+void UEnemyManagerWorldSubsystem::TransferTokens(int SourceId, int TargetId, int Amount)
+{
+	Consumers[SourceId].TokensAllocated -= Amount;
+	Consumers[TargetId].TokensAllocated += Amount;
+}
+
+int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(int TargetId, int RequestedTokens)
+{
+	// Invalid request
+	if (!Consumers.Contains(TargetId) || RequestedTokens <= 0) { return 0; }
+
+	// No available tokens remain in the system
+	int AvailableTokens = TotalTokens - Consumers[TargetId].TokensAllocated;
+	if (AvailableTokens == 0) { return 0; }
+
+	// Calculate priority for all contributors
+	int TotalPriority = 0;
+	int HighestPriority = 0;
+	for (const auto& Consumer : Consumers)
+	{
+		TotalPriority += Consumer.Value.Priority;
+		if (Consumer.Value.Priority > HighestPriority)
+		{
+			HighestPriority = Consumer.Value.Priority;
+		}
+	}
+
+	// Requesting consumer is not a contributor
+	TotalPriority -= Consumers[TargetId].Priority;
+
+	TMap<int, int> ContributionSplit;
+
+	int TokensContributed = 0;
+
+
+	// There is only one possible contributor
+	if (Consumers.Num() == 2)
+	{
+		for (auto& Consumer : Consumers)
+		{
+			if (Consumer.Value.Id != TargetId)
+			{
+				int Contribution = FMath::Min(Consumer.Value.TokensAllocated, RequestedTokens);
+				
+				TransferTokens(Consumer.Value.Id, TargetId, Contribution);
+
+				return Contribution;
+			}
+		}
+	}
+
+	// Calculate number of tokens that each consumer will contribute to the request
+	for (const auto& Consumer : Consumers)
+	{
+		if (Consumer.Value.Id == TargetId) { continue; }
+		
+		// Consumers with lower priority should contribute more
+		float InversePriority = static_cast<float>(TotalPriority - Consumer.Value.Priority) / (Consumers.Num() - 2);
+		int Contribution = FMath::Floor(InversePriority / TotalPriority * RequestedTokens);
+
+		TokensContributed += Contribution;
+		ContributionSplit.Add(Consumer.Value.Id, Contribution);
+	}
+
+	// Assign leftover tokens by ascending priority
+	Consumers.ValueSort(
+		[](const FTokenConsumer& a, const FTokenConsumer& b)
+		{
+			return a.Priority < b.Priority;;
+		}
+	);
+
+	int TokensLeftover = RequestedTokens - TokensContributed;
+
+	// Handle leftovers and transfer tokens
+	for (const auto& Consumer : Consumers)
+	{
+		if (Consumer.Value.Id == TargetId) { continue; }
+
+		int TargetCont = ContributionSplit[Consumer.Value.Id] + TokensLeftover;
+		int ActualCont = FMath::Min(TargetCont, Consumer.Value.TokensAllocated);
+
+		TransferTokens(Consumer.Value.Id, TargetId, ActualCont);
+
+		TokensLeftover = TargetCont - ActualCont;
+	}
+
+	// If there are still tokens leftover, then there weren't enough in the system
+	return RequestedTokens - TokensLeftover;
 }
