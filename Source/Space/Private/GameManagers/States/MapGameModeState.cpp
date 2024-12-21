@@ -5,9 +5,10 @@
 
 void UMapGameModeState::OnEnterState_Implementation()
 {
-	
+	Super::OnEnterState_Implementation();
 }
 
 void UMapGameModeState::OnExitState_Implementation()
 {
+	Super::OnExitState_Implementation();
 }

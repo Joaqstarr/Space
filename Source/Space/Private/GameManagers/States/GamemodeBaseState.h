@@ -3,20 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GamemodeBaseState.h"
-#include "CombatZoneGameModeState.generated.h"
+#include "Utility/StateMachine/StateMachine.h"
+#include "GamemodeBaseState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UCombatZoneGameModeState : public UGamemodeBaseState
+class UGamemodeBaseState : public UStateMachine
 {
 	GENERATED_BODY()
-
 public:
 	virtual void OnEnterState_Implementation() override;
 	virtual void OnExitState_Implementation() override;
-protected:
-	
+
 };

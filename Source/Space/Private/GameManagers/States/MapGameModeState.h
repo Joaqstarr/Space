@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Utility/StateMachine/StateMachine.h"
+#include "GamemodeBaseState.h"
 #include "MapGameModeState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UMapGameModeState : public UStateMachine
+class UMapGameModeState : public UGamemodeBaseState
 {
 	GENERATED_BODY()
 public:

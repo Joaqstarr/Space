@@ -7,6 +7,7 @@
 
 void UCombatZoneGameModeState::OnEnterState_Implementation()
 {
+	Super::OnEnterState_Implementation();
 	if (ULevelStreamingSubsystem* levelStreamingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<ULevelStreamingSubsystem>())
 	{
 		levelStreamingSubsystem->StreamLevel(FName("DeepSpaceMap"), true);
@@ -15,6 +16,7 @@ void UCombatZoneGameModeState::OnEnterState_Implementation()
 
 void UCombatZoneGameModeState::OnExitState_Implementation()
 {
+	Super::OnExitState_Implementation();
 	if (ULevelStreamingSubsystem* levelStreamingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<ULevelStreamingSubsystem>())
 	{
 		levelStreamingSubsystem->UnloadLevel(FName("DeepSpaceMap"));
