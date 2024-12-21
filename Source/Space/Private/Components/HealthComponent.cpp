@@ -96,7 +96,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 void UHealthComponent::HealthAttributeChanged(const FOnAttributeChangeData& data)
 {
 	Health = data.NewValue;
-	OnHealthChanged.Broadcast(Health, MaxHealth);
+	OnHealthChanged.Broadcast(Health, data.OldValue,MaxHealth);
 
 	if(Health <= 0)
 	{

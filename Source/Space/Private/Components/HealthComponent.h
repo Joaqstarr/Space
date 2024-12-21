@@ -12,7 +12,7 @@ struct FOnAttributeChangeData;
 class UAbilitySystemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthDepletedSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChangedSignature, int, NewHealth, int, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHealthChangedSignature, int, NewHealth, int, OldHealth, int, MaxHealth);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UHealthComponent : public UActorComponent, public IAbilitySystemInterface
@@ -34,9 +34,14 @@ public:
 
 
 public:
+	/*
+	 * Delegate that fires on health changed. Contains 3 int parameters, current health, old health, and max health
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthChangedSignature OnHealthChanged;
-	
+	/*
+	 * Fires when health is zero, currently only on server.
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Default")
 	FOnHealthDepletedSignature OnHealthDepleted;
 protected:

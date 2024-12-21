@@ -3,29 +3,37 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "SpaceGamemode.generated.h"
+#include "GameFramework/GameStateBase.h"
+#include "SpaceGameState.generated.h"
 
-class UMapGameModeState;
 class UGameModeStateMachine;
 /**
  * 
  */
 UCLASS()
-class ASpaceGamemode : public AGameModeBase
+class ASpaceGameState : public AGameStateBase
 {
+public:
+	ASpaceGameState();
 	GENERATED_BODY()
 
-public:
-	ASpaceGamemode();
-
+	/*
+	 * Switch state to combat zone. Must be called on server
+	 */
 	UFUNCTION(BlueprintCallable)
 	void SwitchToCombatZoneState();
+	/*
+	 * Switch state to map. Must be called on server
+	 */
 	UFUNCTION(BlueprintCallable)
 	void SwitchToMapState();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSwitchToCombatZoneState();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSwitchToMapState();
 protected:
-	virtual void StartPlay() override;
-	
+	virtual void BeginPlay() override;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="States")
 	TSubclassOf<UGameModeStateMachine> StateMachineClass;
 	
