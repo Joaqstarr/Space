@@ -16,6 +16,7 @@ class ASpacePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
+	virtual void AcknowledgePossession(class APawn* p) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void EnterPlayerController();
 

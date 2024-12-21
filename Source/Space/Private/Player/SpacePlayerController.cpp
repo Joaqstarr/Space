@@ -2,6 +2,8 @@
 
 #include "Player/SpacePlayerController.h"
 
+#include "AbilitySystemComponent.h"
+#include "SpacePawn.h"
 #include "Blueprint/UserWidget.h"
 
 
@@ -19,6 +21,18 @@ void ASpacePlayerController::SetupDefaultWidget_Implementation()
 		UE_LOG(LogTemp, Warning, TEXT("Controller Widget creation failed. Is default class set?"));
 	}
 	
+}
+
+void ASpacePlayerController::AcknowledgePossession(class APawn* p)
+{
+	Super::AcknowledgePossession(p);
+
+	ASpacePawn* asSpacePawn = Cast<ASpacePawn>(p);
+
+	if (asSpacePawn)
+	{
+		asSpacePawn->GetAbilitySystemComponent()->InitAbilityActorInfo(asSpacePawn, asSpacePawn);
+	}
 }
 
 void ASpacePlayerController::EnterPlayerController()
