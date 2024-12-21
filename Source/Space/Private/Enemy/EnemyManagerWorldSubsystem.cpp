@@ -45,10 +45,9 @@ bool UEnemyManagerWorldSubsystem::UnregisterTokenConsumer(int ConsumerId)
 		int TokensHeld = Consumers[ConsumerId].TokensAllocated;
 		TotalTokens -= TokensHeld;
 
-		Consumers[ConsumerId].Callback.ExecuteIfBound(0);
 		Consumers.Remove(ConsumerId);
 
-		DistributeTokens(TokensHeld);
+		DistributeTokens(TokensHeld, false);
 
 		return true;
 	}
@@ -64,7 +63,7 @@ int UEnemyManagerWorldSubsystem::GetAssignedTokens(int ConsumerId) const
 	return Consumers[ConsumerId].TokensAllocated;
 }
 
-void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens)
+void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens, bool IsInstantTransmission)
 {
 	if (Tokens <= 0) { return; }
 
@@ -78,6 +77,7 @@ void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens)
 
 	if (TotalPriority == 0) { return; }
 
+	TMap<int, int> TokensDistributed{};
 
 	int TotalTokensAllocated = 0;
 	for (auto& Consumer : Consumers)
@@ -85,7 +85,7 @@ void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens)
 		int NumTokens = FMath::Floor(static_cast<float>(Consumer.Value.Priority) / TotalPriority * Tokens);
 
 		TotalTokensAllocated += NumTokens;
-		Consumer.Value.TokensAllocated += NumTokens;
+		TokensDistributed.Emplace(Consumer.Value.Id, NumTokens);
 	}
 
 	int TokensLeftover = Tokens - TotalTokensAllocated;
@@ -110,14 +110,14 @@ void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens)
 		{
 			break;
 		}
-		++Consumer.Value.TokensAllocated;
+		++TokensDistributed[Consumer.Value.Id];
 		++LeftoversAssigned;
 	}
 
 	// Notify all consumers of their newly allocated tokens
 	for (const auto& Consumer : Consumers)
 	{
-		Consumer.Value.Callback.ExecuteIfBound(Consumer.Value.TokensAllocated);
+		SendTokens(Consumer.Value.Id, TokensDistributed[Consumer.Value.Id], IsInstantTransmission);
 	}
 }
 
@@ -136,6 +136,34 @@ void UEnemyManagerWorldSubsystem::TransferTokens(int SourceId, int TargetId, int
 {
 	Consumers[SourceId].TokensAllocated -= Amount;
 	Consumers[TargetId].TokensAllocated += Amount;
+}
+
+void UEnemyManagerWorldSubsystem::SendTokens(int TargetId, int Amount, bool IsInstantTransmission)
+{
+	if (IsInstantTransmission)
+	{
+		Consumers[TargetId].TokensAllocated += Amount;
+		return;
+	}
+
+	if (TokensInTransit.Contains(TargetId))
+	{
+		TokensInTransit[TargetId] += Amount;
+	}
+	else
+	{
+		TokensInTransit.Emplace(TargetId, Amount);
+	}
+}
+
+// TODO: Need to handle case where the target is destroyed while a payload is in transit
+void UEnemyManagerWorldSubsystem::FinalizeTransfer(int TargetId, int Amount)
+{
+	if (!TokensInTransit.Contains(TargetId) || !Consumers.Contains(TargetId)) { return; }
+
+	int AmountAvailable = FMath::Min(TokensInTransit[TargetId], Amount);
+	TokensInTransit[TargetId] -= AmountAvailable;
+	Consumers[TargetId].TokensAllocated += AmountAvailable;
 }
 
 int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(int TargetId, int RequestedTokens)

@@ -78,7 +78,16 @@ public:
 	*	@param Tokens Number of tokens to distribute
 	*/
 	UFUNCTION(BlueprintCallable)
-	void DistributeTokens(int Tokens);
+	void DistributeTokens(int Tokens, bool IsInstantTransmission);
+
+
+	/*
+	*	Finalizes the transfer of tokens that were in transit by adding it to the consumer's allocation pool.
+	*	@param TargetId The consumer receiving the token payload
+	*	@param Amount Number of tokens in the payload
+	*/
+	UFUNCTION(BlueprintCallable)
+	void FinalizeTransfer(int TargetId, int Amount);
 
 	UFUNCTION(BlueprintCallable)
 	void DebugPrintState();
@@ -87,5 +96,14 @@ private:
 	int TotalTokens;
 	TMap<int, FTokenConsumer> Consumers;
 
+
+
+	// Starts a transfer between two consumers. Assumes SourceId and TargetId exist and Source has at least Amount
 	void TransferTokens(int SourceId, int TargetId, int Amount);
+
+	// Adds tokens to a target's allocated pool, either directly or through the transit
+	void SendTokens(int TargetId, int Amount, bool IsInstantTransmission);
+
+	// Maps consumers to the number of inbounds tokens 
+	TMap<int, int> TokensInTransit;
 };
