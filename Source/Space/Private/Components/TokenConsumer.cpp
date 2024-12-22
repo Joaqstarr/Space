@@ -55,6 +55,11 @@ FString UTokenConsumer::GetConsumerName() const
 	return GetOwner()->GetActorNameOrLabel();
 }
 
+void UTokenConsumer::UnregisterConsumer()
+{
+	Manager->UnregisterTokenConsumer(this);
+}
+
 void UTokenConsumer::NotifyTransferSent(const UTokenConsumer* Target, int TokenAmount) const
 {
 	UE_LOG(LogTemp, Log, TEXT("Consumer %s is sending %d reinforcements to %s."), *GetConsumerName(), TokenAmount, *Target->GetConsumerName());

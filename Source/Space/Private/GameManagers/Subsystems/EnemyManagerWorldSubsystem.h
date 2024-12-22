@@ -66,12 +66,22 @@ public:
 	int RequestAdditionalTokens(const UTokenConsumer* Consumer, int Tokens);
 
 	/*
-	*	Distributes all available tokens among all consumers.
+	*	Distributes tokens among all consumers.
 	*	Consumers with higher priority will be allocated more tokens.
 	*	@param Tokens Number of tokens to distribute
 	*/
 	UFUNCTION(BlueprintCallable)
-	void DistributeTokens(int Tokens, bool IsInstantTransmission);
+	void DistributeTokensInstant(int Tokens);
+
+
+	/*
+	*	Distributes tokens to consumers from a source.
+	*	Distributions are not instant and must be received as inbound tokens.
+	*	@param Tokens Number of tokens to distribute
+	*	@param Source The token consumer sending the distribution
+	*/
+	UFUNCTION(BlueprintCallable)
+	void DistributeTokensFromSource(int Tokens, const UTokenConsumer* Source);
 
 	/*
 	*	Finalizes the transfer of tokens that were in transit by adding it to the consumer's allocation pool.
@@ -87,7 +97,14 @@ public:
 private:
 	int TotalTokens;
 
-	// Starts a transfer between two consumers
+	int UnallocatedTokens;
+
+	/*
+	*	Starts a transfer between two consumers
+	*	@param Source The consumer providing the tokens
+	*	@param Target The consumer receiving the tokens
+	*	@param The number of tokens to transfer
+	*/
 	void TransferTokens(const UTokenConsumer* Source, const UTokenConsumer* Target, int Amount);
 
 	// Adds tokens to a target's allocated pool, either directly or through the transit
@@ -95,4 +112,12 @@ private:
 
 	// Maps consumers to the number of tokens currently held by that consumer
 	TMap<UTokenConsumer*, FConsumerInfo> Consumers;
+
+	/*
+	*	Calculates how many tokens to distribute to each consumer in a set, based on priority.
+	*	@param Tokens Number of tokens to distribute
+	*	@param IgnoreList List of consumers to ignore in the distribution
+	*	@return Mapping of consumers to the number of tokens to distribute
+	*/
+	TMap<const UTokenConsumer*, int> GetDistribution(int Tokens, const TArray<const UTokenConsumer*>& IgnoreList);
 };

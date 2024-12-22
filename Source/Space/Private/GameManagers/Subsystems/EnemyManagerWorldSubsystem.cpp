@@ -33,13 +33,8 @@ bool UEnemyManagerWorldSubsystem::UnregisterTokenConsumer(UTokenConsumer* Consum
 {
 	if (Consumers.Contains(Consumer))
 	{
-		int TokensHeld = Consumers[Consumer].TokensAllocated;
-		TotalTokens -= TokensHeld;
-
+		DistributeTokensFromSource(Consumers[Consumer].TokensAllocated, Consumer);
 		Consumers.Remove(Consumer);
-
-		DistributeTokens(TokensHeld, false);
-
 		return true;
 	}
 	return false;
@@ -71,53 +66,87 @@ int UEnemyManagerWorldSubsystem::GetConsumerPriority(const UTokenConsumer* Consu
 	return 0;
 }
 
-void UEnemyManagerWorldSubsystem::DistributeTokens(int Tokens, bool IsInstantTransmission)
+TMap<const UTokenConsumer*, int> UEnemyManagerWorldSubsystem::GetDistribution(int Tokens, const TArray<const UTokenConsumer*>& IgnoreList)
 {
-	if (Tokens <= 0) { return; }
+	if (Tokens <= 0) { return {}; }
 
-	TotalTokens += Tokens;
-
+	// Calculate total priority
 	int TotalPriority = 0;
-
 	for (const auto& Consumer : Consumers)
 	{
+		if (IgnoreList.Contains(Consumer.Key)) { continue; }
 		TotalPriority += Consumer.Value.Priority;
 	}
 
-	if (TotalPriority == 0) { return; }
+	if (TotalPriority == 0) { return {}; }
 
-	TMap<const UTokenConsumer*, int> TokensDistributed{};
+	// Distribute tokens proportionally by priority. Higher priority consumers get more tokens
+	TMap<const UTokenConsumer*, int> Result{};
 
 	int TotalTokensAllocated = 0;
 	for (auto& Consumer : Consumers)
 	{
+		if (IgnoreList.Contains(Consumer.Key)) { continue; }
 		int NumTokens = FMath::Floor(static_cast<float>(Consumer.Key->GetPriority()) / TotalPriority * Tokens);
 
 		TotalTokensAllocated += NumTokens;
-		TokensDistributed.Add(Consumer.Key, NumTokens);
+		Result.Add(Consumer.Key, NumTokens);
 	}
 
+	// Handle leftovers due to floating point rounding
 	int TokensLeftover = Tokens - TotalTokensAllocated;
 
-	if (TokensLeftover > 0)
+	if (TokensLeftover == 0)
 	{
-		// Assign leftover tokens by descending priority
-		Consumers.ValueSort(
-			[](const FConsumerInfo& a, const FConsumerInfo& b)
-			{
-				return a.Priority > b.Priority;
-			}
-		);
+		return Result;
 	}
+
+
+	// Assign leftover tokens by descending priority
+	Consumers.ValueSort(
+		[](const FConsumerInfo& a, const FConsumerInfo& b)
+		{
+			return a.Priority > b.Priority;
+		}
+	);
 
 	for (auto& Consumer : Consumers)
 	{
-		if (TokensLeftover > 0)
-		{
-			++TokensDistributed[Consumer.Key];
-			--TokensLeftover;
-		}
-		SendTokens(Consumer.Key, TokensDistributed[Consumer.Key], IsInstantTransmission);	
+		if (IgnoreList.Contains(Consumer.Key)) { continue; }
+		if (TokensLeftover <= 0) { break; }
+		++Result[Consumer.Key];
+		--TokensLeftover;
+	}
+	return Result;
+}
+
+void UEnemyManagerWorldSubsystem::DistributeTokensInstant(int Tokens)
+{
+	TMap<const UTokenConsumer*, int> Distribution = GetDistribution(Tokens, {});
+
+	for (auto& Consumer : Distribution)
+	{
+		SendTokens(Consumer.Key, Consumer.Value, true);
+	}
+}
+
+void UEnemyManagerWorldSubsystem::DistributeTokensFromSource(int Tokens, const UTokenConsumer* Source)
+{
+	if (Source == nullptr || !Consumers.Contains(Source)) { return; }
+	Tokens = FMath::Min(Tokens, Consumers[Source].TokensAllocated);
+
+	TMap<const UTokenConsumer*, int> Distribution = GetDistribution(Tokens, { Source });
+
+	// Tokens could not be distributed
+	if (Distribution.Num() == 0)
+	{
+		UnallocatedTokens += Tokens;
+		return;
+	}
+
+	for (auto& Consumer : Distribution)
+	{
+		TransferTokens(Source, Consumer.Key, Consumer.Value);
 	}
 }
 

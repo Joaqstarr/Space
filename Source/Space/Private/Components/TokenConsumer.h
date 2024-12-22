@@ -56,6 +56,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure=false)
 	int RequestTokens(int Amount) const;
 
+	/*
+	*	Unregisters this consumer from the token manager.
+	*	All tokens held by the consumer will be dispersed to others in the system and the consumer will
+	*	no longer be able to receive tokens.
+	*/
+	UFUNCTION(BlueprintCallable)
+	void UnregisterConsumer();
+
 	UFUNCTION(BlueprintCallable)
 	FString GetConsumerName() const;
 
