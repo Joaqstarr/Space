@@ -214,11 +214,15 @@ int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* T
 		ContributionSplit.Add(Consumer.Key, Contribution);
 	}
 
-	// Assign leftover tokens by ascending priority
+	// Assign leftover tokens by ascending priority and ascending token count
 	Consumers.ValueSort(
 		[](const FConsumerInfo& a, const FConsumerInfo& b)
 		{
-			return a.Priority < b.Priority;;
+			if (a.Priority == b.Priority)
+			{
+				return a.TokensAllocated < b.TokensAllocated;
+			}
+			return a.Priority < b.Priority;
 		}
 	);
 
