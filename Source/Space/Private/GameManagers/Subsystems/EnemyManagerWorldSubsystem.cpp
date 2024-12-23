@@ -82,41 +82,39 @@ TMap<const UTokenConsumer*, int> UEnemyManagerWorldSubsystem::GetDistribution(in
 
 	// Distribute tokens proportionally by priority. Higher priority consumers get more tokens
 	TMap<const UTokenConsumer*, int> Result{};
-
 	int TotalTokensAllocated = 0;
+
 	for (auto& Consumer : Consumers)
 	{
 		if (IgnoreList.Contains(Consumer.Key)) { continue; }
-		int NumTokens = FMath::Floor(static_cast<float>(Consumer.Key->GetPriority()) / TotalPriority * Tokens);
+
+		float NumTokens = FMath::Floor(static_cast<float>(Consumer.Value.Priority) / TotalPriority * Tokens);
 
 		TotalTokensAllocated += NumTokens;
 		Result.Add(Consumer.Key, NumTokens);
 	}
 
-	// Handle leftovers due to floating point rounding
+	// Handle leftovers due to rounding
 	int TokensLeftover = Tokens - TotalTokensAllocated;
 
-	if (TokensLeftover == 0)
-	{
-		return Result;
-	}
+	if (TokensLeftover == 0) { return Result; }
 
-
-	// Assign leftover tokens by descending priority
+	// Assign leftovers by descending priority
 	Consumers.ValueSort(
 		[](const FConsumerInfo& a, const FConsumerInfo& b)
 		{
 			return a.Priority > b.Priority;
 		}
 	);
-
-	for (auto& Consumer : Consumers)
+	
+	for (auto Iter = Consumers.CreateIterator(); TokensLeftover > 0; ++Iter, --TokensLeftover)
 	{
-		if (IgnoreList.Contains(Consumer.Key)) { continue; }
-		if (TokensLeftover <= 0) { break; }
-		++Result[Consumer.Key];
-		--TokensLeftover;
+		if (!IgnoreList.Contains(Iter.Key()))
+		{
+			++Result[Iter.Key()];
+		}
 	}
+
 	return Result;
 }
 
@@ -212,16 +210,9 @@ int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* T
 
 	// Calculate priority for all contributors
 	int TotalPriority = 0;
-	int HighestPriority = 0;
 	for (const auto& Consumer : Consumers)
 	{
-		int Priority = Consumer.Key->GetPriority();
-		TotalPriority += Priority;
-
-		if (Priority > HighestPriority)
-		{
-			HighestPriority = Priority;
-		}
+		TotalPriority += Consumer.Value.Priority;
 	}
 
 	// Requesting consumer is not a contributor
@@ -279,12 +270,9 @@ void UEnemyManagerWorldSubsystem::DebugPrintState()
 	FString Output = FString::Printf(TEXT("Enemy Manager Subsystem State:\n Total Tokens: %d\n"), TotalTokens);
 	for (const auto& Consumer : Consumers)
 	{
-		Output += FString::Printf(TEXT("Consumer %d with priority %d has %d tokens.\n"), Consumer.Key->GetUniqueID(), Consumer.Value.Priority, Consumer.Value.TokensAllocated);
+		Output += FString::Printf(TEXT("Consumer %d with priority %d has %d tokens held and %d tokens inbound.\n"), Consumer.Key->GetUniqueID(), Consumer.Value.Priority, Consumer.Value.TokensAllocated, Consumer.Value.TokensInbound);
 	}
 	Output += "\n";
-	for (const auto& Consumer : Consumers)
-	{
-		Output += FString::Printf(TEXT("Consumer %d has %d tokens inbound."), Consumer.Key->GetUniqueID(), Consumer.Value.TokensInbound);
-	}
+
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Output);
 }
