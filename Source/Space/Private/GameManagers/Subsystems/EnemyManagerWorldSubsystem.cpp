@@ -2,6 +2,9 @@
 
 #include "GameManagers/Subsystems/EnemyManagerWorldSubsystem.h"
 #include "Components/TokenConsumer.h"
+#include "Utility/TokenTransferUnit.h"
+
+static bool IsHigherPriority(const FConsumerInfo& A, const FConsumerInfo& B);
 
 void UEnemyManagerWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -18,23 +21,24 @@ int UEnemyManagerWorldSubsystem::GetTotalTokens() const
 	return TotalTokens;
 }
 
-bool UEnemyManagerWorldSubsystem::RegisterTokenConsumer(UTokenConsumer* Consumer, int Priority)
+bool UEnemyManagerWorldSubsystem::RegisterTokenConsumer(const UTokenConsumer* Consumer, int Priority)
 {
 	if (!Consumer || Consumers.Contains(Consumer))
 	{
 		return false;
 	}
 
-	Consumers.Add(Consumer, {0, 0, Priority});
+	Consumers.Add(Consumer, FConsumerInfo{Priority});
 	return true;
 }
 
-bool UEnemyManagerWorldSubsystem::UnregisterTokenConsumer(UTokenConsumer* Consumer)
+bool UEnemyManagerWorldSubsystem::UnregisterTokenConsumer(const UTokenConsumer* Consumer)
 {
 	if (Consumers.Contains(Consumer))
 	{
 		DistributeTokensFromSource(Consumers[Consumer].TokensAllocated, Consumer);
 		Consumers.Remove(Consumer);
+		RerouteInboundTransfers(Consumer);
 		return true;
 	}
 	return false;
@@ -70,11 +74,17 @@ TMap<const UTokenConsumer*, int> UEnemyManagerWorldSubsystem::GetDistribution(in
 {
 	if (Tokens <= 0) { return {}; }
 
+	TMap<const UTokenConsumer*, FConsumerInfo> Recipients = Consumers.FilterByPredicate(
+		[&IgnoreList](const TPair<const UTokenConsumer*, FConsumerInfo>& Consumer)
+		{
+			return !IgnoreList.Contains(Consumer.Key);
+		}
+	);
+
 	// Calculate total priority
 	int TotalPriority = 0;
-	for (const auto& Consumer : Consumers)
+	for (const auto& Consumer : Recipients)
 	{
-		if (IgnoreList.Contains(Consumer.Key)) { continue; }
 		TotalPriority += Consumer.Value.Priority;
 	}
 
@@ -84,10 +94,8 @@ TMap<const UTokenConsumer*, int> UEnemyManagerWorldSubsystem::GetDistribution(in
 	TMap<const UTokenConsumer*, int> Result{};
 	int TotalTokensAllocated = 0;
 
-	for (auto& Consumer : Consumers)
+	for (auto& Consumer : Recipients)
 	{
-		if (IgnoreList.Contains(Consumer.Key)) { continue; }
-
 		float NumTokens = FMath::Floor(static_cast<float>(Consumer.Value.Priority) / TotalPriority * Tokens);
 
 		TotalTokensAllocated += NumTokens;
@@ -100,22 +108,71 @@ TMap<const UTokenConsumer*, int> UEnemyManagerWorldSubsystem::GetDistribution(in
 	if (TokensLeftover == 0) { return Result; }
 
 	// Assign leftovers by descending priority
-	Consumers.ValueSort(
-		[](const FConsumerInfo& a, const FConsumerInfo& b)
+	Recipients.ValueSort(
+		[](const FConsumerInfo& A, const FConsumerInfo& B)
 		{
-			return a.Priority > b.Priority;
+			return A.Priority > B.Priority;
 		}
 	);
 	
-	for (auto Iter = Consumers.CreateIterator(); TokensLeftover > 0; ++Iter, --TokensLeftover)
+	// Number of leftover tokens should always be less than the number of consumers
+	for (auto Iter = Recipients.CreateIterator(); TokensLeftover > 0; ++Iter, --TokensLeftover)
 	{
-		if (!IgnoreList.Contains(Iter.Key()))
+		++Result[Iter.Key()];
+	}
+	return Result;
+}
+
+void UEnemyManagerWorldSubsystem::RerouteInboundTransfers(const UTokenConsumer* Target)
+{
+	auto InboundTransfers = Transfers.FilterByPredicate(
+		[=](const TPair<TScriptInterface<ITokenTransferUnit>, FTransferInfo>& Transfer)
 		{
-			++Result[Iter.Key()];
+			return Transfer.Key.GetObject() != nullptr && Transfer.Value.Destination == Target;
+		}
+	);
+
+	// Find a fallback consumer to send transfers to if both the source and the dest are destroyed
+	const TPair<const UTokenConsumer*, FConsumerInfo>* Fallback{};
+	for (const auto& Consumer : Consumers)
+	{
+		if (!Fallback || IsHigherPriority(Consumer.Value, Fallback->Value))
+		{
+			Fallback = &Consumer;
 		}
 	}
 
-	return Result;
+	const UTokenConsumer* Destination;
+	for (const auto& Transfer : InboundTransfers)
+	{
+		// Send the transfers back to where they came from, if possible
+		if (Consumers.Contains(Transfer.Value.Source))
+		{
+			Destination = Transfer.Value.Source;
+		}
+		else if (Fallback)
+		{
+			Destination = Fallback->Key;
+		}
+		else
+		{
+			// This should only happen if all bases get destroyed and there is an active transfer
+			// TODO: Figure out a good way to handle this case
+			Destination = nullptr;
+		}
+		
+		Transfers[Transfer.Key].Destination = Destination;
+		ITokenTransferUnit::Execute_OnTargetChange(Transfer.Key.GetObject(), Destination);
+
+		if (Consumers.Contains(Destination))
+		{
+			Consumers[Destination].TokensInbound += Transfer.Value.TokenAmount;
+		}
+	}
+	if (Consumers.Contains(Target))
+	{
+		Consumers[Target].TokensInbound = 0;
+	}
 }
 
 void UEnemyManagerWorldSubsystem::DistributeTokensInstant(int Tokens)
@@ -130,37 +187,40 @@ void UEnemyManagerWorldSubsystem::DistributeTokensInstant(int Tokens)
 
 void UEnemyManagerWorldSubsystem::DistributeTokensFromSource(int Tokens, const UTokenConsumer* Source)
 {
-	if (Source == nullptr || !Consumers.Contains(Source)) { return; }
+	if (!Source || !Consumers.Contains(Source)) { return; }
 	Tokens = FMath::Min(Tokens, Consumers[Source].TokensAllocated);
 
 	TMap<const UTokenConsumer*, int> Distribution = GetDistribution(Tokens, { Source });
 
-	// Tokens could not be distributed
+	// Tokens could not be distributed - all other bases have been destroyed
 	if (Distribution.Num() == 0)
 	{
 		UnallocatedTokens += Tokens;
 		return;
 	}
 
+	int Test{};
 	for (auto& Consumer : Distribution)
 	{
 		TransferTokens(Source, Consumer.Key, Consumer.Value);
+		Test += Consumer.Value;
 	}
 }
 
 void UEnemyManagerWorldSubsystem::TransferTokens(const UTokenConsumer* Source, const UTokenConsumer* Target, int Amount)
 {
-	if (Source == nullptr || !Consumers.Contains(Source) || Amount <= 0) { return; }
+	if (!Source || !Consumers.Contains(Source) || Amount <= 0) { return; }
 	Consumers[Source].TokensAllocated -= Amount;
+	TokensInTransfer += Amount;
 
-	Source->NotifyTransferSent(Target, Amount);
+	Source->NotifyTransferRequested(Target, Amount);
 
 	SendTokens(Target, Amount, false);
 }
 
 void UEnemyManagerWorldSubsystem::SendTokens(const UTokenConsumer* Target, int Amount, bool IsInstantTransmission)
 {
-	if (Target == nullptr || !Consumers.Contains(Target)) { return; }
+	if (!Target || !Consumers.Contains(Target)) { return; }
 	if (IsInstantTransmission)
 	{
 		Consumers[Target].TokensAllocated += Amount;
@@ -171,26 +231,50 @@ void UEnemyManagerWorldSubsystem::SendTokens(const UTokenConsumer* Target, int A
 	}
 }
 
-// TODO: Need to handle case where the target is destroyed while a payload is in transit
-void UEnemyManagerWorldSubsystem::FinalizeTransfer(const UTokenConsumer* Target, int Amount)
+void UEnemyManagerWorldSubsystem::FinalizeTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit)
 {
-	if (!Consumers.Contains(Target)) { return; }
+	// Invalid transfer unit
+	if (!Transfers.Contains(TransferUnit)) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemyManagerSubsystem FinalizeTransfer: Invalid transfer."));
+		return;
+	}
 
-	int AmountAvailable = FMath::Min(Consumers[Target].TokensInbound, Amount);
+	const UTokenConsumer* Destination = Transfers[TransferUnit].Destination;
+	if (!Consumers.Contains(Destination))
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemyManagerSubsystem FinalizeTransfer: Invalid destination"))
+		return;
+	}
 
-	Consumers[Target].TokensInbound -= AmountAvailable;
-	Consumers[Target].TokensAllocated += AmountAvailable;
+	int TokenAmount = Transfers[TransferUnit].TokenAmount;
+
+	Consumers[Destination].TokensInbound -= TokenAmount;
+	Consumers[Destination].TokensAllocated += TokenAmount;
+
+	TokensInTransfer -= TokenAmount;
+
+	ITokenTransferUnit::Execute_OnTransferComplete(TransferUnit.GetObject());
+	Transfers.Remove(TransferUnit);
 }
+
+void UEnemyManagerWorldSubsystem::RegisterTokenTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit, const UTokenConsumer* Source, const UTokenConsumer* Destination, int TokenAmount)
+{
+	Transfers.Add(TransferUnit, FTransferInfo{ Source, Destination, TokenAmount });
+	ITokenTransferUnit::Execute_OnTargetChange(TransferUnit.GetObject(), Destination);
+}
+
 
 int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* Target, int RequestedTokens)
 {
 	// Invalid request
-	if (Target == nullptr || !Consumers.Contains(Target) || RequestedTokens <= 0) { return 0; }
+	if (!Target || !Consumers.Contains(Target) || RequestedTokens <= 0) { return 0; }
 
-	// No available tokens remain in the system
-	int AvailableTokens = TotalTokens - Consumers[Target].TokensAllocated;
-	if (AvailableTokens == 0) { return 0; }
-
+	// No contributors
+	if (Consumers.Num() == 0 || Consumers.Num() == 1)
+	{
+		return 0;
+	}
 
 	// There is only one possible contributor
 	if (Consumers.Num() == 2)
@@ -234,6 +318,9 @@ int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* T
 		ContributionSplit.Add(Consumer.Key, Contribution);
 	}
 
+	// There may be leftovers due to rounding
+	int TokensLeftover = RequestedTokens - TokensContributed;
+
 	// Assign leftover tokens by ascending priority and ascending token count
 	Consumers.ValueSort(
 		[](const FConsumerInfo& a, const FConsumerInfo& b)
@@ -245,8 +332,6 @@ int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* T
 			return a.Priority < b.Priority;
 		}
 	);
-
-	int TokensLeftover = RequestedTokens - TokensContributed;
 
 	// Handle leftovers and transfer tokens
 	for (const auto& Consumer : Consumers)
@@ -267,12 +352,42 @@ int UEnemyManagerWorldSubsystem::RequestAdditionalTokens(const UTokenConsumer* T
 
 void UEnemyManagerWorldSubsystem::DebugPrintState()
 {
-	FString Output = FString::Printf(TEXT("Enemy Manager Subsystem State:\n Total Tokens: %d\n"), TotalTokens);
+	FString Output{" \n\n=====Enemy Manager World Subsystem State=====\n"};
+	int AllocatedTotal{};
 	for (const auto& Consumer : Consumers)
 	{
 		Output += FString::Printf(TEXT("Consumer %d with priority %d has %d tokens held and %d tokens inbound.\n"), Consumer.Key->GetUniqueID(), Consumer.Value.Priority, Consumer.Value.TokensAllocated, Consumer.Value.TokensInbound);
+		AllocatedTotal += Consumer.Value.TokensAllocated;
 	}
-	Output += "\n";
+	Output += FString::Printf(TEXT("\nTotal Tokens Allocated: %d\n"), AllocatedTotal);
+	Output += "\n\nTransfers:\n";
 
-	UE_LOG(LogTemp, Log, TEXT("%s"), *Output);
+	int TransferTotal{};
+	for (const auto& Transfer : Transfers)
+	{
+		Output += FString::Printf(TEXT("%d going from %s to %s\n"), Transfer.Value.TokenAmount, *Transfer.Value.Source->GetConsumerName(), *Transfer.Value.Destination->GetConsumerName());
+		TransferTotal += Transfer.Value.TokenAmount;
+	}
+	Output += FString::Printf(TEXT("\nTokens In Transfer: %d\n"), TransferTotal);
+	Output += "=============================================";
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Output);
+}
+
+const UTokenConsumer* UEnemyManagerWorldSubsystem::GetTransferDestination(TScriptInterface<ITokenTransferUnit> TransferUnit)
+{
+	if (Transfers.Contains(TransferUnit))
+	{
+		return Transfers[TransferUnit].Destination;
+	}
+	return nullptr;
+}
+
+// Helper function that returns true if a is higher priority than b
+static bool IsHigherPriority(const FConsumerInfo& A, const FConsumerInfo& B)
+{
+	if (A.Priority == B.Priority)
+	{
+		return A.TokensAllocated < B.TokensAllocated;
+	}
+	return A.Priority > B.Priority;
 }

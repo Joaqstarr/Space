@@ -9,6 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTransferSentSignature, const UTokenConsumer*, Target, int, TokenAmount);
 
 class UEnemyManagerWorldSubsystem;
+class ITokenTransferUnit;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UTokenConsumer : public UActorComponent
@@ -40,14 +41,17 @@ public:
 	/*
 	*	Alerts the consumer that it has had some of its tokens reallocated to another target
 	*/
-	void NotifyTransferSent(const UTokenConsumer* Target, int TokenAmount) const;
+	void NotifyTransferRequested(const UTokenConsumer* Target, int TokenAmount) const;
 
 	/*
 	*	Finalizes a transfer of inbound tokens.
 	*	Call this when reinforcements arrive at a consumer.
 	*/
-	UFUNCTION(BlueprintCallable)
-	void OnReceiveTransfer(int Amount) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	void OnReceiveTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	void RegisterTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit, const UTokenConsumer* Target, int TokenAmount) const;
 
 	/*
 	*	Requests more tokens from other consumers in the system.
@@ -71,8 +75,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	static int NextId;
-
 	// This is only a cached variable and not the actual priority used
 	UPROPERTY(EditInstanceOnly, BlueprintGetter = GetPriority, BlueprintSetter = SetPriority)
 	int Priority;

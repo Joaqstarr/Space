@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TokenConsumer.h"
+#include "Utility/TokenTransferUnit.h"
 #include "GameManagers/Subsystems/EnemyManagerWorldSubsystem.h"
-
-int UTokenConsumer::NextId = 0;
 
 UTokenConsumer::UTokenConsumer()
 {
@@ -60,13 +59,32 @@ void UTokenConsumer::UnregisterConsumer()
 	Manager->UnregisterTokenConsumer(this);
 }
 
-void UTokenConsumer::NotifyTransferSent(const UTokenConsumer* Target, int TokenAmount) const
+void UTokenConsumer::NotifyTransferRequested(const UTokenConsumer* Target, int TokenAmount) const
 {
 	UE_LOG(LogTemp, Log, TEXT("Consumer %s is sending %d reinforcements to %s."), *GetConsumerName(), TokenAmount, *Target->GetConsumerName());
 	OnTransferSent.Broadcast(Target, TokenAmount);
 }
 
-void UTokenConsumer::OnReceiveTransfer(int TokenAmount) const
+void UTokenConsumer::OnReceiveTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit) const
 {
-	Manager->FinalizeTransfer(this, TokenAmount);
+	if (TransferUnit.GetObject() == nullptr || !TransferUnit.GetObject()->Implements<UTokenTransferUnit>())
+	{
+		UE_LOG(LogTemp, Error, TEXT("TokenConsumer OnReceiveTransfer: TransferUnit provided does not implement ITokenTransferUnit"));
+		return;
+	}
+
+	if (Manager->GetTransferDestination(TransferUnit) == this)
+	{
+		Manager->FinalizeTransfer(TransferUnit);
+	}
+}
+
+void UTokenConsumer::RegisterTransfer(TScriptInterface<ITokenTransferUnit> TransferUnit, const UTokenConsumer* Target, int TokenAmount) const
+{
+	if (TransferUnit.GetObject() == nullptr || !TransferUnit.GetObject()->Implements<UTokenTransferUnit>())
+	{
+		UE_LOG(LogTemp, Error, TEXT("TokenConsumer RegisterTransfer: TransferUnit provided does not implement ITokenTransferUnit %p %d"), TransferUnit.GetObject(), TransferUnit.GetObject()->Implements<UTokenTransferUnit>());
+		return;
+	}
+	Manager->RegisterTokenTransfer(TransferUnit, this, Target, TokenAmount);
 }
