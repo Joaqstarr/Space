@@ -4,8 +4,10 @@
 #include "Map/OverworldMap.h"
 
 #include "MapObject.h"
+#include "MapPlanet.h"
 #include "MapTransformComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameManagers/GameMode/SpaceGamemode.h"
 
 // Sets default values
 AOverworldMap::AOverworldMap()
@@ -14,15 +16,36 @@ AOverworldMap::AOverworldMap()
 	PrimaryActorTick.bCanEverTick = false;
 
 	MapBounds = CreateDefaultSubobject<UBoxComponent>("MapBounds");
+	bReplicates = true;
+
 }
 
 
-
-// Called when the game starts or when spawned
-void AOverworldMap::BeginPlay()
+void AOverworldMap::SpawnWorldMapActors()
 {
-	Super::BeginPlay();
+	if (HasAuthority())
+	{
+		ASpaceGamemode* gamemode = Cast<ASpaceGamemode>(GetWorld()->GetAuthGameMode());
+		if (gamemode)
+		{
+			for (FPlanetData planet : gamemode->GetMapData().Planets)
+			{
+				FActorSpawnParameters spawnParams;
+				spawnParams.Owner = this;
+				spawnParams.Name = FName(planet.Name);
+				AMapPlanet* spawnedPlanet = GetWorld()->SpawnActor<AMapPlanet>(PlanetClass, FVector::Zero(), FRotator::ZeroRotator, spawnParams);
+				if (spawnedPlanet)
+				{
+					spawnedPlanet->SetPlanetData(&planet);
+					AddMapObject(spawnedPlanet);
+				}
+			}
+		}
+	}
+}
 
+void AOverworldMap::IntializeMapObjects()
+{
 	for (AActor* mapObject : MapObjects)
 	{
 		if (mapObject && mapObject->GetClass()->ImplementsInterface(UMapObject::StaticClass()))
@@ -34,6 +57,22 @@ void AOverworldMap::BeginPlay()
 			}
 		}
 	}
+}
+
+void AOverworldMap::InitialiZeOverworldMap()
+{
+	SpawnWorldMapActors();
+	
+	IntializeMapObjects();
+}
+
+// Called when the game starts or when spawned
+void AOverworldMap::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AOverworldMap::InitialiZeOverworldMap);
 }
 
 void AOverworldMap::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
@@ -117,4 +156,10 @@ FVector AOverworldMap::MapSpaceToWorldSpace(const FVector& mapSpace) const
 
 	FVector worldPos = localPosition + boxOrigin;
 	return worldPos;
+}
+void AOverworldMap::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AOverworldMap, MapObjects);
 }

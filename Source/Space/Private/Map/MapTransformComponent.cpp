@@ -70,5 +70,7 @@ void UMapTransformComponent::GetLifetimeReplicatedProps(TArray<class FLifetimePr
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UMapTransformComponent, MapPosition);
+	DOREPLIFETIME(UMapTransformComponent, AssociatedMap);
+
 }
 

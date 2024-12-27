@@ -36,7 +36,7 @@ protected:
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	//map this object is attached to
-	UPROPERTY(EditInstanceOnly, Category="Map")
+	UPROPERTY(EditInstanceOnly, Replicated, Category="Map")
 	TObjectPtr<AOverworldMap> AssociatedMap;
 private:
 	UFUNCTION()

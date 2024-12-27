@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "MapPlanet.generated.h"
 
+struct FPlanetData;
 class UMapTransformComponent;
 class UStaticMeshComponent;
 
@@ -20,18 +21,20 @@ public:
 	AMapPlanet();
 
 	virtual UMapTransformComponent* GetMapTransformComponent() override;
+	virtual void Tick(float DeltaTime) override;
+	void SetPlanetData(FPlanetData* data);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> PlanetMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMapTransformComponent> MapTransformComponent;
+private:
+	FPlanetData* PlanetData;
 
 };

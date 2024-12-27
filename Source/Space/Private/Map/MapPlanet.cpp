@@ -3,6 +3,7 @@
 
 #include "Map/MapPlanet.h"
 
+#include "MapGenerationStructs.h"
 #include "MapTransformComponent.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -17,6 +18,7 @@ AMapPlanet::AMapPlanet()
 
 	MapTransformComponent = CreateDefaultSubobject<UMapTransformComponent>(FName("MapTransformComponent"));
 	MapTransformComponent->SetIsReplicated(true);
+	
 }
 
 UMapTransformComponent* AMapPlanet::GetMapTransformComponent()
@@ -36,5 +38,11 @@ void AMapPlanet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AMapPlanet::SetPlanetData(FPlanetData* data)
+{
+	PlanetData = data;
+	MapTransformComponent->MapPosition = data->Location;
 }
 
