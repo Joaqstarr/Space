@@ -86,6 +86,6 @@ UMapTransformComponent* AMapReinforcementUnit::GetMapTransformComponent()
 
 void AMapReinforcementUnit::OnTargetChange_Implementation(const UTokenConsumer* newTarget)
 {
-	Target = const_cast<UTokenConsumer*>(newTarget);
+	Target = newTarget;
 }
 

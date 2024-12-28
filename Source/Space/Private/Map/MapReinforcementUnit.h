@@ -33,5 +33,5 @@ protected:
 	TObjectPtr<UMapTransformComponent> MapTransformComponent;
 private:
 	UPROPERTY()
-	TObjectPtr<UTokenConsumer> Target;
+	TObjectPtr<const UTokenConsumer> Target;
 };
