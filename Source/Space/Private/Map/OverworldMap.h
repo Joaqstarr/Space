@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "OverworldMap.generated.h"
 
+class AMapEnemyBase;
 class AMapPlanet;
 class UMapTransformComponent;
 class UMapObject;
@@ -37,8 +38,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Map|Spawnable Classes")
 	TSubclassOf<AMapPlanet> PlanetClass;
+	UPROPERTY(EditAnywhere, Category="Map|Spawnable Classes")
+	TSubclassOf<AMapEnemyBase> EnemyBaseClass;
 protected:
 	//holds every map object within this map. Must implement IMapObject.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Map")

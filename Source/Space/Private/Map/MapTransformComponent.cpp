@@ -21,7 +21,14 @@ void UMapTransformComponent::SetAssociatedMap(AOverworldMap* newMap)
 	AssociatedMap = newMap;
 }
 
-
+AOverworldMap* UMapTransformComponent::GetAssociatedMap()
+{
+	return AssociatedMap;
+}
+void UMapTransformComponent::SetMapPosition(FVector newMapPosition)
+{
+	MapPosition = newMapPosition;
+}
 // Called when the game starts
 void UMapTransformComponent::BeginPlay()
 {

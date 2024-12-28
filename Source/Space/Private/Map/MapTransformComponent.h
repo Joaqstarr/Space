@@ -17,6 +17,7 @@ public:
 	// Sets default values for this component's properties
 	UMapTransformComponent();
 	void SetAssociatedMap(AOverworldMap* newMap);
+	AOverworldMap* GetAssociatedMap();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
@@ -29,6 +30,7 @@ public:
 	FVector MapPosition;
 	void UpdateWorldPosition(AOverworldMap* withMap);
 
+	void SetMapPosition(FVector newMapPosition);
 
 protected:
 	// Called when the game starts

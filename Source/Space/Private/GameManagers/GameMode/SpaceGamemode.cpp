@@ -48,9 +48,13 @@ void ASpaceGamemode::GenerateOverworldMap(const FWorldGenerationParams& params)
 
 
 		FPlanetData planet;
-		planet.Name = TEXT("Planet ") + FString::FromInt(i + 1);
+		planet.Name = FName(TEXT("Planet ") + FString::FromInt(i + 1));
 		planet.Location = randomVector;
 
+		FBaseData baseData;
+		baseData.Name = FName(TEXT("Base ") + FString::FromInt(i + 1));
+
+		planet.Bases.Add(baseData);
 		OverworldMap.Planets.Add(planet);
 	}
 }

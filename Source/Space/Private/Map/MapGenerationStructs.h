@@ -1,5 +1,9 @@
-﻿#include "CoreMinimal.h"
+﻿#pragma once
+
+#include "CoreMinimal.h"
 #include "MapGenerationStructs.generated.h"
+
+class UTokenConsumer;
 
 USTRUCT(BlueprintType)
 struct FWorldGenerationParams
@@ -12,8 +16,12 @@ USTRUCT(BlueprintType)
 struct FBaseData
 {
 	GENERATED_BODY()
-    int priority;
+
+	UPROPERTY(BlueprintReadOnly)
+	FName Name;
 	
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UTokenConsumer> TokenConsumer;
 };
 
 USTRUCT(BlueprintType)
@@ -22,7 +30,7 @@ struct FPlanetData
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite)
-	FString Name;
+	FName Name;
 	
 	/* float 0-1
 	 *  X: Left - Right

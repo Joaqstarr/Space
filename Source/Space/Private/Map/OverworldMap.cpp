@@ -3,6 +3,7 @@
 
 #include "Map/OverworldMap.h"
 
+#include "MapEnemyBase.h"
 #include "MapObject.h"
 #include "MapPlanet.h"
 #include "MapTransformComponent.h"
@@ -18,6 +19,8 @@ AOverworldMap::AOverworldMap()
 	MapBounds = CreateDefaultSubobject<UBoxComponent>("MapBounds");
 	bReplicates = true;
 
+	PlanetClass = AMapPlanet::StaticClass();
+	EnemyBaseClass = AMapEnemyBase::StaticClass();
 }
 
 
@@ -36,7 +39,7 @@ void AOverworldMap::SpawnWorldMapActors()
 				AMapPlanet* spawnedPlanet = GetWorld()->SpawnActor<AMapPlanet>(PlanetClass, FVector::Zero(), FRotator::ZeroRotator, spawnParams);
 				if (spawnedPlanet)
 				{
-					spawnedPlanet->SetPlanetData(&planet);
+					spawnedPlanet->SetPlanetData(&planet, EnemyBaseClass);
 					AddMapObject(spawnedPlanet);
 				}
 			}

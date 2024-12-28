@@ -3,9 +3,11 @@
 
 #include "Map/MapPlanet.h"
 
+#include "MapEnemyBase.h"
 #include "MapGenerationStructs.h"
 #include "MapTransformComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TokenConsumer.h"
 
 // Sets default values
 AMapPlanet::AMapPlanet()
@@ -40,9 +42,24 @@ void AMapPlanet::Tick(float DeltaTime)
 
 }
 
-void AMapPlanet::SetPlanetData(FPlanetData* data)
+void AMapPlanet::SetPlanetData(FPlanetData* planetData, UClass* enemyBaseClass)
 {
-	PlanetData = data;
-	MapTransformComponent->MapPosition = data->Location;
+	PlanetData = planetData;
+	MapTransformComponent->MapPosition = planetData->Location;
+
+	for (FBaseData& baseData : planetData->Bases)
+	{
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		spawnParams.Name = FName(baseData.Name);
+		AMapEnemyBase* spawnedBase = GetWorld()->SpawnActor<AMapEnemyBase>(enemyBaseClass, FVector::Zero(), FRotator::ZeroRotator, spawnParams);
+
+		if (spawnedBase)
+		{
+			spawnedBase->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, NAME_None);
+			baseData.TokenConsumer = spawnedBase->GetTokenConsumer();
+			baseData.TokenConsumer->SetPriority(5);
+		}
+	}
 }
 
