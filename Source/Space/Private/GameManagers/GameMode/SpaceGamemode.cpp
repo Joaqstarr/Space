@@ -3,11 +3,29 @@
 
 #include "SpaceGamemode.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Map/MapTransformComponent.h"
+#include "Map/OverworldMap.h"
+#include "Map/Player/MapPlayer.h"
+
+
+ASpaceGamemode::ASpaceGamemode()
+{
+	MapPlayerClass = AMapPlayer::StaticClass();
+}
 
 void ASpaceGamemode::BeginPlay()
 {
 	Super::BeginPlay();
 	GenerateOverworldMap(FWorldGenerationParams());
+	
+	OverworldMapActor = Cast<AOverworldMap>(UGameplayStatics::GetActorOfClass(GetWorld(), AOverworldMap::StaticClass()));
+
+	FActorSpawnParameters spawnParams;
+	MapPlayerPawn = GetWorld()->SpawnActor<AMapPlayer>(MapPlayerClass, spawnParams);
+
+	MapPlayerPawn->GetMapTransformComponent()->SetAssociatedMap(OverworldMapActor);
+	GetWorld()->GetFirstPlayerController()->Possess(MapPlayerPawn);
 }
 
 FOverworldMapData& ASpaceGamemode::GetMapData()

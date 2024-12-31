@@ -8,6 +8,8 @@
 #include "Map/MapGenerationStructs.h"
 #include "SpaceGamemode.generated.h"
 
+class AOverworldMap;
+class AMapPlayer;
 class UMapGameModeState;
 class UGameModeStateMachine;
 /**
@@ -21,10 +23,18 @@ class ASpaceGamemode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	ASpaceGamemode();
 	virtual void BeginPlay() override;
 	FOverworldMapData& GetMapData();
 protected:
 	void GenerateOverworldMap(const FWorldGenerationParams& params);
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AMapPlayer> MapPlayerClass;
 private:
 	FOverworldMapData OverworldMap;
+	UPROPERTY()
+	TObjectPtr<AMapPlayer> MapPlayerPawn;
+	UPROPERTY()
+	TObjectPtr<AOverworldMap> OverworldMapActor;
 };
