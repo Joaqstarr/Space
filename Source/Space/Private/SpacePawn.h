@@ -20,7 +20,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void PossessedBy(AController* NewController) override;
-	
+	virtual void UnPossessed() override;
 protected:
 	
 	/*
@@ -34,8 +34,20 @@ protected:
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 	UPROPERTY(EditDefaultsOnly, Category="Abilities")
 	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
+	UFUNCTION(Client, Reliable)
+	void PosessedClient(AController* NewController);
+	UFUNCTION(BlueprintImplementableEvent)
+	void PosessedClientBP(AController* NewController);
+	UFUNCTION(Client, Reliable)
+	void UnPosessedClient(AController* OldController);
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnPosessedClientBP(AController* OldController);
 private:
 	void InitDefaultAttributes() const;
 	void GiveDefaultAbilities();
+
+	UPROPERTY()
+	AController* CurrentController;
 
 };

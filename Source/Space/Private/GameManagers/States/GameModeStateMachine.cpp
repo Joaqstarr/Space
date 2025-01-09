@@ -5,6 +5,7 @@
 
 #include "CombatZoneGameModeState.h"
 #include "MapGameModeState.h"
+#include "GameManagers/SpaceGameState.h"
 
 
 UGameModeStateMachine::UGameModeStateMachine()
@@ -17,12 +18,25 @@ void UGameModeStateMachine::OnEnterState_Implementation()
 {
 }
 
-void UGameModeStateMachine::InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState)
+
+
+void UGameModeStateMachine::InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState,
+	const FStateMachineInitializationParams& initializationParams)
 {
+	Super::InitializeStateMachine(DefaultState, initializationParams);
 	MapGameModeState = NewObject<UMapGameModeState>(this, MapGameModeStateClass);
 	CombatZoneGameModeState = NewObject<UCombatZoneGameModeState>(this, CombatZoneGameModeStateClass);
+
+	ASpaceGameState* gameState = Cast<ASpaceGameState>(GetWorld()->GetGameState());
 	
-	Super::InitializeStateMachine(MapGameModeState);
+	FGamemodeStateParams initParams;
+	initParams.GameModeStateMachine = this;
+	initParams.GameState = gameState;
+	
+	MapGameModeState->InitializeStateMachine(nullptr,initParams);
+	CombatZoneGameModeState->InitializeStateMachine(nullptr,initParams);
+	
+	Super::InitializeStateMachine(MapGameModeState, initializationParams);
 }
 
 void UGameModeStateMachine::SwitchToMapState()

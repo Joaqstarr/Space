@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "SpacePlayerController.generated.h"
 
+class APlayerShip;
 class UUserWidget;
 class APawn;
 /**
@@ -16,12 +17,14 @@ class ASpacePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
+	virtual void ServerAcknowledgePossession_Implementation(class APawn* P) override;
 	virtual void AcknowledgePossession(class APawn* p) override;
-	UFUNCTION(BlueprintCallable)
-	virtual void EnterPlayerController();
 
-	UFUNCTION(BlueprintCallable)
-	virtual void ExitPlayerController();
+
+	UFUNCTION()
+	void UnPossessPlayerShip();
+	UFUNCTION()
+	void PossessPlayerShip();
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintNativeEvent)
@@ -32,4 +35,12 @@ protected:
 	TSubclassOf<UUserWidget> DefaultWidgetClass;
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UUserWidget> DefaultWidget;
+private:
+	UPROPERTY()
+	TObjectPtr<APlayerShip> PlayerShipPawn;
+	
+	UFUNCTION(Server, Reliable)
+	void UnPossessPlayerShip_Server();
+	UFUNCTION(Server, Reliable)
+	void PossessPlayerShip_Server();
 };

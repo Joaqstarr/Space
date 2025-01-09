@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SpacePawn.h"
 #include "GameFramework/Pawn.h"
 #include "Map/MapObject.h"
 #include "MapPlayer.generated.h"
@@ -10,7 +11,7 @@
 class UMapTransformComponent;
 
 UCLASS()
-class AMapPlayer : public APawn, public IMapObject
+class AMapPlayer : public ASpacePawn, public IMapObject
 {
 	GENERATED_BODY()
 

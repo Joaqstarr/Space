@@ -21,16 +21,17 @@ void ASpaceGamemode::BeginPlay()
 	
 	OverworldMapActor = Cast<AOverworldMap>(UGameplayStatics::GetActorOfClass(GetWorld(), AOverworldMap::StaticClass()));
 
-	FActorSpawnParameters spawnParams;
-	MapPlayerPawn = GetWorld()->SpawnActor<AMapPlayer>(MapPlayerClass, spawnParams);
-
-	MapPlayerPawn->GetMapTransformComponent()->SetAssociatedMap(OverworldMapActor);
-	GetWorld()->GetFirstPlayerController()->Possess(MapPlayerPawn);
+	//GetWorld()->GetFirstPlayerController()->Possess(MapPlayerPawn);
 }
 
 FOverworldMapData& ASpaceGamemode::GetMapData()
 {
 	return OverworldMap;
+}
+
+AOverworldMap* ASpaceGamemode::GetOverworldMap()
+{
+	return OverworldMapActor;
 }
 
 FVector GenerateRandomNormalizedVector()

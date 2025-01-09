@@ -9,7 +9,7 @@ UStateMachine::UStateMachine()
 	CurrentState = nullptr;
 }
 
-void UStateMachine::InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState)
+void UStateMachine::InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState, const FStateMachineInitializationParams& initializationParams)
 {
 	SwitchState(DefaultState);
 }

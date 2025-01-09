@@ -43,6 +43,7 @@ void ASpaceGameState::MulticastSwitchToCombatZoneState_Implementation()
 		return;
 	}
 
+	OnSwitchToCombatZoneStateEvent.Broadcast();
 	StateMachine->SwitchToCombatZoneState();
 }
 
@@ -54,6 +55,7 @@ void ASpaceGameState::MulticastSwitchToMapState_Implementation()
 		return;
 	}
 
+	OnSwitchToMapStateEvent.Broadcast();
 	StateMachine->SwitchToMapState();
 }
 
@@ -62,5 +64,6 @@ void ASpaceGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	StateMachine = NewObject<UGameModeStateMachine>(this, StateMachineClass);
-	StateMachine->InitializeStateMachine(nullptr);
+
+	StateMachine->InitializeStateMachine(nullptr, FStateMachineInitializationParams());
 }

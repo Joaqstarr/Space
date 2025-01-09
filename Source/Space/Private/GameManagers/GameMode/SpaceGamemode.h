@@ -26,6 +26,7 @@ public:
 	ASpaceGamemode();
 	virtual void BeginPlay() override;
 	FOverworldMapData& GetMapData();
+	AOverworldMap* GetOverworldMap();
 protected:
 	void GenerateOverworldMap(const FWorldGenerationParams& params);
 protected:
@@ -33,8 +34,7 @@ protected:
 	TSubclassOf<AMapPlayer> MapPlayerClass;
 private:
 	FOverworldMapData OverworldMap;
-	UPROPERTY()
-	TObjectPtr<AMapPlayer> MapPlayerPawn;
+
 	UPROPERTY()
 	TObjectPtr<AOverworldMap> OverworldMapActor;
 };

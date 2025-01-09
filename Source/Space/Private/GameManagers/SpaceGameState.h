@@ -6,6 +6,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "SpaceGameState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameStateEventSignature);
+
 class UGameModeStateMachine;
 /**
  * 
@@ -32,6 +34,9 @@ public:
 	void MulticastSwitchToCombatZoneState();
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSwitchToMapState();
+
+	FGameStateEventSignature OnSwitchToCombatZoneStateEvent;
+	FGameStateEventSignature OnSwitchToMapStateEvent;
 protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="States")

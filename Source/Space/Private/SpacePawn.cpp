@@ -32,6 +32,23 @@ void ASpacePawn::PossessedBy(AController* NewController)
 	}
 
 	SetOwner(NewController);
+
+	CurrentController = NewController;
+	if (HasAuthority())
+	{
+		PosessedClient(NewController);
+	}
+}
+
+void ASpacePawn::UnPossessed()
+{
+	Super::UnPossessed();
+
+	if (HasAuthority())
+	{
+		UnPosessedClient(CurrentController);
+	}
+	CurrentController = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -43,6 +60,24 @@ void ASpacePawn::BeginPlay()
 
 	InitDefaultAttributes();
 	GiveDefaultAbilities();
+}
+
+void ASpacePawn::PosessedClient_Implementation(AController* NewController)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Running PosessedClient on %s"), HasAuthority() ? TEXT("Server") : TEXT("Client"));
+
+	if (IsLocallyControlled())
+	{
+		PosessedClientBP(NewController);
+	}
+}
+
+void ASpacePawn::UnPosessedClient_Implementation(AController* OldController)
+{
+	if (IsLocallyControlled())
+	{
+		UnPosessedClientBP(OldController);
+	}
 }
 
 void ASpacePawn::InitDefaultAttributes() const

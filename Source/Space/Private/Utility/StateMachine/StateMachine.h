@@ -5,6 +5,12 @@
 #include "CoreMinimal.h"
 #include "StateMachine.generated.h"
 
+USTRUCT()
+struct FStateMachineInitializationParams
+{
+	GENERATED_BODY()
+	
+};
 UCLASS(Blueprintable)
 class SPACE_API UStateMachine: public UObject
 {
@@ -12,7 +18,7 @@ class SPACE_API UStateMachine: public UObject
 	
 public:
 	UStateMachine();
-	virtual void InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState);
+	virtual void InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState, const FStateMachineInitializationParams& initializationParams);
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEnterState();

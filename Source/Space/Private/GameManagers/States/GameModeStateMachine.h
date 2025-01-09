@@ -19,8 +19,7 @@ public:
 	UGameModeStateMachine();
 	virtual void OnEnterState_Implementation() override;
 	/*Default state ignored, leave as nullptr*/
-	virtual void InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState) override;
-
+	virtual void InitializeStateMachine(const TObjectPtr<UStateMachine> DefaultState, const FStateMachineInitializationParams& initializationParams) override;
 	UFUNCTION(BlueprintCallable)
 	void SwitchToCombatZoneState();
 	UFUNCTION(BlueprintCallable)
