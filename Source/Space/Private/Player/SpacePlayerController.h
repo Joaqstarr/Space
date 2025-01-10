@@ -20,7 +20,7 @@ public:
 	virtual void ServerAcknowledgePossession_Implementation(class APawn* P) override;
 	virtual void AcknowledgePossession(class APawn* p) override;
 
-
+ 
 	UFUNCTION()
 	void UnPossessPlayerShip();
 	UFUNCTION()

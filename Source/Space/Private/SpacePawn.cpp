@@ -66,18 +66,14 @@ void ASpacePawn::PosessedClient_Implementation(AController* NewController)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Running PosessedClient on %s"), HasAuthority() ? TEXT("Server") : TEXT("Client"));
 
-	if (IsLocallyControlled())
-	{
-		PosessedClientBP(NewController);
-	}
+	PosessedClientBP(NewController);
 }
 
 void ASpacePawn::UnPosessedClient_Implementation(AController* OldController)
 {
-	if (IsLocallyControlled())
-	{
-		UnPosessedClientBP(OldController);
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Running UnPosessedClient on %s"), HasAuthority() ? TEXT("Server") : TEXT("Client"));
+
+	UnPosessedClientBP(OldController);
 }
 
 void ASpacePawn::InitDefaultAttributes() const
